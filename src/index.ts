@@ -1,3 +1,3 @@
-export function Hello() {
-    return "World";
-};
+import Renderer from "./modules/renderer.js";
+
+export { Renderer as RouteRenderer };
