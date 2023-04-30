@@ -1,0 +1,21 @@
+{
+  "name": "route-renderer",
+  "version": "0.9.0",
+  "description": "A 3D route renderer using WebGL.",
+  "main": "index.js",
+  "scripts": {
+    "build": "npx tsc"
+  },
+  "keywords": [
+    "webgl",
+    "opengl",
+    "3d",
+    "route"
+  ],
+  "author": "Nora Söderlund",
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "@types/node": "^18.16.3",
+    "typescript": "^5.0.4"
+  }
+}
