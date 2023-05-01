@@ -4,9 +4,29 @@ import { RendererBuffer } from "./renderer/buffer.js";
 import { RendererScene } from "./renderer/scene.js";
 import { RendererWebGL } from "./renderer/webgl.js";
 
+function getColorArray(input?: number[]) {
+    if(!input)
+        return undefined;
+
+    return input;
+};
+
+export type RendererOptions = {
+    topColor?: number[];
+    bottomColor?: number[];
+
+    leftWallColor?: number[];
+    rightWallColor?: number[];
+    wallColor?: number[];
+
+    elevationGradient?: boolean;
+    elevationGradientColors?: number[][];
+};
+
 export default class Renderer {
     private canvas: HTMLCanvasElement;
     private context: WebGLRenderingContext;
+    private options: RendererOptions;
     private programInfo: any;
     
     private paths: any[] = [];
@@ -18,7 +38,7 @@ export default class Renderer {
 
     private previous: number = 0;
 
-    constructor(canvas: HTMLCanvasElement) {
+    constructor(canvas: HTMLCanvasElement, options: RendererOptions) {
         const context = canvas.getContext("webgl");
 
         if (!context)
@@ -26,6 +46,7 @@ export default class Renderer {
 
         this.canvas = canvas;
         this.context = context;
+        this.options = options;
 
         this.context.clearColor(0, 0, 0, 1);
         this.context.clear(this.context.COLOR_BUFFER_BIT);
@@ -91,9 +112,6 @@ export default class Renderer {
             let fullDistance = 0;
 
             path.forEach((coordinate, index) => {
-                if(startLeft === null || startTop === null)
-                    throw new Error("fuck you");
-
                 const colorMultiplier = (coordinate.altitude - minimumAltitude) / (maximumAltitude - minimumAltitude);
 
                 console.log({ max: (maximumAltitude - minimumAltitude)});
@@ -119,12 +137,24 @@ export default class Renderer {
                     distanceStart: fullDistance,
 
                     verticles: null,
-                    color: [
-                        (green[0] + (red[0] - green[0]) * colorMultiplier) - (23 / 255),
-                        (green[1] + (red[1] - green[1]) * colorMultiplier) - (26 / 255),
-                        (green[2] + (red[2] - green[2]) * colorMultiplier) - (35 / 255),
-                        1.0
-                    ]
+                    color:
+                        (!this.options.elevationGradient)?(coordinate.color?.map((index: number) => index / 255) ?? this.options.wallColor?.map((index: number) => index / 255)):(
+                            (this.options.elevationGradientColors)?(
+                                [
+                                    ((this.options.elevationGradientColors[0][0] + (this.options.elevationGradientColors[1][0] - this.options.elevationGradientColors[0][0]) * colorMultiplier)) / 255,
+                                    ((this.options.elevationGradientColors[0][1] + (this.options.elevationGradientColors[1][1] - this.options.elevationGradientColors[0][1]) * colorMultiplier)) / 255,
+                                    ((this.options.elevationGradientColors[0][2] + (this.options.elevationGradientColors[1][2] - this.options.elevationGradientColors[0][2]) * colorMultiplier)) / 255,
+                                    ((this.options.elevationGradientColors[0][3] + (this.options.elevationGradientColors[1][3] - this.options.elevationGradientColors[0][3]) * colorMultiplier)) / 255
+                                ]
+                            ):(
+                                [
+                                    (green[0] + (red[0] - green[0]) * colorMultiplier) - (23 / 255),
+                                    (green[1] + (red[1] - green[1]) * colorMultiplier) - (26 / 255),
+                                    (green[2] + (red[2] - green[2]) * colorMultiplier) - (35 / 255),
+                                    1.0
+                                ]
+                            )
+                        )
                 };
 
                 points.push(point);
@@ -140,7 +170,7 @@ export default class Renderer {
 
         this.animations = animations;
 
-        this.bufferers = this.paths.map((path) => RendererBuffer.initBuffers(this.context, path, this.getAnimationFrame()));
+        this.bufferers = this.paths.map((path) => RendererBuffer.initBuffers(this.context, path, this.options, this.getAnimationFrame()));
     };
 
     private getAnimationFrame(now = 0): AnimationFrame {
@@ -201,7 +231,7 @@ export default class Renderer {
 
     public setRawPaths(paths: any[][]) {
         this.bufferers = paths.map((path) => {
-            return RendererBuffer.initBuffers(this.context, path, this.getAnimationFrame());
+            return RendererBuffer.initBuffers(this.context, path, this.options, this.getAnimationFrame());
         });
     };
 
@@ -238,7 +268,7 @@ export default class Renderer {
 
     private render(now: number) {
         if(this.bufferers.length !== this.paths.length || this.animations.length)
-            this.bufferers = this.paths.map((path) => RendererBuffer.initBuffers(this.context, path, this.getAnimationFrame(now)));
+            this.bufferers = this.paths.map((path) => RendererBuffer.initBuffers(this.context, path, this.options, this.getAnimationFrame(now)));
 
         RendererScene.drawScene(this.context, this.programInfo, this.bufferers, {
             x: this.deltaX,

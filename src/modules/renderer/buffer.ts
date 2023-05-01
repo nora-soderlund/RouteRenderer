@@ -1,9 +1,10 @@
+import { RendererOptions } from "../renderer";
 import { AnimationFrame } from "./animation";
 
 declare const vec3: any;
 
 export class RendererBuffer {
-    static initBuffers(gl: WebGLRenderingContext, path: any, animationFrame: AnimationFrame) {
+    static initBuffers(gl: WebGLRenderingContext, path: any, options: RendererOptions, animationFrame: AnimationFrame) {
         const positions = [];
         const faceColors = [];
         const indices = [];
@@ -123,27 +124,27 @@ export class RendererBuffer {
                 // bottom face
                 positions.push(
                     topVertices[0][0], // back right Y
-                    0,
+                    -0.001,
                     topVertices[0][1], // back right X
 
                     topVertices[1][0], // top right Y
-                    0,
+                    -0.001,
                     topVertices[1][1], // top right X
 
                     bottomVertices[1][0], // top left Y
-                    0,
+                    -0.001,
                     bottomVertices[1][1], // top left X,
 
                     bottomVertices[0][0], // back left Y
-                    0,
+                    -0.001,
                     bottomVertices[0][1] // back left X
                 );
 
                 faceColors.push(...[
-                    to.color ?? [23 / 255, 26 / 255, 35 / 255, 1.0], // left wall
-                    to.color ?? [23 / 255, 26 / 255, 35 / 255, 1.0], // right wall
-                    [187 / 255, 135 / 255, 252 / 255, 1.0], // top face
-                    to.color ?? [23 / 255, 26 / 255, 35 / 255, 1.0] // bottom face
+                    options.leftWallColor?.map((index) => index / 255) ?? to.color ?? [ 0, 1, 0, 1 ], // left wall
+                    options.rightWallColor?.map((index) => index / 255) ?? to.color ?? [ 0, 0, 1, 1 ], // right wall
+                    options.topColor?.map((index) => index / 255) ?? [ 1, 0, 0, 1 ], // top face
+                    options.bottomColor?.map((index) => index / 255) ?? to.color ?? [ 0, 0, 0, 1 ] // bottom face
                 ]);
 
                 indices.push(...([
@@ -227,11 +228,31 @@ export class RendererBuffer {
                     from.verticles.frontLeftZ,
                     from.verticles.frontLeftX // back left X
                 );
+            
+                // bottom face
+                positions.push(
+                    from.verticles.frontRightY, // back right Y
+                    -0.001,
+                    from.verticles.frontRightX, // back right X
+                
+                    topVertices[0][0], // top right Y
+                    -0.001,
+                    topVertices[0][1], // top right X
+                
+                    bottomVertices[0][0], // top left Y
+                    -0.001,
+                    bottomVertices[0][1], // top left X,
+                
+                    from.verticles.frontLeftY, // back left Y
+                    -0.001,
+                    from.verticles.frontLeftX // back left X
+                );
 
                 faceColors.push(...[
-                    to.color ?? [23 / 255, 26 / 255, 35 / 255, 1.0], // Front face: white
-                    to.color ?? [23 / 255, 26 / 255, 35 / 255, 1.0], // Back face: red
-                    [187 / 255, 135 / 255, 252 / 255, 1.0]
+                    options.leftWallColor?.map((index) => index / 255) ?? to.color ?? [ 0, 1, 0, 1 ], // Front face: white
+                    options.rightWallColor?.map((index) => index / 255) ?? to.color ?? [ 0, 0, 1, 1 ], // Back face: red
+                    options.topColor?.map((index) => index / 255) ?? [ 1, 0, 0, 1 ],
+                    options.bottomColor?.map((index) => index / 255) ?? to.color ?? [ 0, 0, 0, 1 ] // bottom face
                 ]);
 
                 indices.push(...([
@@ -241,9 +262,11 @@ export class RendererBuffer {
                     4, 6, 7, // back
                     8, 9, 10,
                     8, 10, 11, // top
+                    12, 13, 14,
+                    12, 14, 15, // bottom
                 ].map((number) => indexForIndices + number)));
 
-                indexForIndices += 12;
+                indexForIndices += 16;
             }
             
             if(index === path.points.length - 1) {
@@ -269,7 +292,7 @@ export class RendererBuffer {
                 );
 
                 faceColors.push(...[
-                    to.color ?? [23 / 255, 26 / 255, 35 / 255, 1.0]
+                    options.leftWallColor?.map((index) => index / 255) ?? to.color ?? [ 0, 1, 0, 1 ]
                 ]);
 
                 indices.push(...([
@@ -302,7 +325,7 @@ export class RendererBuffer {
                 );
 
                 faceColors.push(...[
-                    to.color ?? [23 / 255, 26 / 255, 35 / 255, 1.0]
+                    options.leftWallColor?.map((index) => index / 255) ?? to.color ?? [ 0, 1, 0, 1 ]
                 ]);
 
                 indices.push(...([

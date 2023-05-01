@@ -41,11 +41,16 @@
                     return {
                         latitude: location.coords.latitude,
                         longitude: location.coords.longitude,
-                        altitude: location.coords.altitude + (index / 100)
+                        altitude: location.coords.altitude + (index / 100),
                     };
                 }));
 
-                const renderer = new RouteRenderer(canvas);
+                const renderer = new RouteRenderer(canvas, {
+                    topColor: [ 187, 135, 252, 255 ],
+                    leftWallColor: [ 0, 255, 0, 255 ],
+                    rightWallColor: [ 0, 0, 255, 255 ],
+                    wallColor: [ 255, 0, 0, 255 ],
+                });
 
                 /*renderer.setRawPaths([
                     [
