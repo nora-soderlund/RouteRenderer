@@ -4,16 +4,12 @@ import { RendererBuffer } from "./renderer/buffer.js";
 import { RendererScene } from "./renderer/scene.js";
 import { RendererWebGL } from "./renderer/webgl.js";
 
-function getColorArray(input?: number[]) {
-    if(!input)
-        return undefined;
-
-    return input;
-};
-
 export type RendererOptions = {
     topColor?: number[];
     bottomColor?: number[];
+
+    startBlockColor?: number[];
+    endBlockColor?: number[];
 
     leftWallColor?: number[];
     rightWallColor?: number[];

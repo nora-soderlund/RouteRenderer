@@ -141,10 +141,10 @@ export class RendererBuffer {
                 );
 
                 faceColors.push(...[
-                    options.leftWallColor?.map((index) => index / 255) ?? to.color ?? [ 0, 1, 0, 1 ], // left wall
+                    options.leftWallColor?.map((index) => index / 255) ?? [ 0, 1, 0, 1 ], // left wall
                     options.rightWallColor?.map((index) => index / 255) ?? to.color ?? [ 0, 0, 1, 1 ], // right wall
                     options.topColor?.map((index) => index / 255) ?? [ 1, 0, 0, 1 ], // top face
-                    options.bottomColor?.map((index) => index / 255) ?? to.color ?? [ 0, 0, 0, 1 ] // bottom face
+                    options.bottomColor?.map((index) => index / 255) ?? [ 0, 0, 0, 1 ] // bottom face
                 ]);
 
                 indices.push(...([
@@ -249,10 +249,10 @@ export class RendererBuffer {
                 );
 
                 faceColors.push(...[
-                    options.leftWallColor?.map((index) => index / 255) ?? to.color ?? [ 0, 1, 0, 1 ], // Front face: white
+                    options.leftWallColor?.map((index) => index / 255) ?? [ 0, 1, 0, 1 ], // Front face: white
                     options.rightWallColor?.map((index) => index / 255) ?? to.color ?? [ 0, 0, 1, 1 ], // Back face: red
                     options.topColor?.map((index) => index / 255) ?? [ 1, 0, 0, 1 ],
-                    options.bottomColor?.map((index) => index / 255) ?? to.color ?? [ 0, 0, 0, 1 ] // bottom face
+                    options.bottomColor?.map((index) => index / 255) ?? [ 0, 0, 0, 1 ] // bottom face
                 ]);
 
                 indices.push(...([
@@ -292,7 +292,7 @@ export class RendererBuffer {
                 );
 
                 faceColors.push(...[
-                    options.leftWallColor?.map((index) => index / 255) ?? to.color ?? [ 0, 1, 0, 1 ]
+                    options.endBlockColor?.map((index) => index / 255) ?? options.bottomColor?.map((index) => index / 255) ?? [ 0, 0, 0, 1 ]
                 ]);
 
                 indices.push(...([
@@ -325,7 +325,7 @@ export class RendererBuffer {
                 );
 
                 faceColors.push(...[
-                    options.leftWallColor?.map((index) => index / 255) ?? to.color ?? [ 0, 1, 0, 1 ]
+                    options.startBlockColor?.map((index) => index / 255) ?? options.bottomColor?.map((index) => index / 255) ?? [ 0, 0, 0, 1 ]
                 ]);
 
                 indices.push(...([
