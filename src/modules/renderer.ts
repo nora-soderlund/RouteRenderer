@@ -1,4 +1,5 @@
 import { Projection } from "./projection.js";
+import { Animation, AnimationFrame } from "./renderer/animation.js";
 import { RendererBuffer } from "./renderer/buffer.js";
 import { RendererScene } from "./renderer/scene.js";
 import { RendererWebGL } from "./renderer/webgl.js";
@@ -7,10 +8,15 @@ export default class Renderer {
     private canvas: HTMLCanvasElement;
     private context: WebGLRenderingContext;
     private programInfo: any;
-    private bufferers: any[];
+    
+    private paths: any[] = [];
+    private bufferers: any[] = [];
+    private animations: Animation[] = [];
 
     private deltaX: number = 0;
     private deltaY: number = 0;
+
+    private previous: number = 0;
 
     constructor(canvas: HTMLCanvasElement) {
         const context = canvas.getContext("webgl");
@@ -26,77 +32,176 @@ export default class Renderer {
 
         this.programInfo = RendererWebGL.initializeProgram(this.context);
 
-        // Here's where we call the routine that builds all the
-        // objects we'll be drawing.
-        this.bufferers = [];
-
         this.registerMouseEvents();
 
         window.requestAnimationFrame(this.render.bind(this));
     };
 
-    public setPaths(paths: any[][]) {
-        let startLeft: number | null = null;
-        let startTop: number | null = null;
+    public setPaths(paths: any[][], animations: Animation[]) {
+        let startLeft: number = NaN;
+        let startTop: number = NaN;
         
-        let minimumLeft: number | null = null;
-        let maximumLeft: number | null = null;
+        let minimumLeft: number = NaN;
+        let maximumLeft: number = NaN;
         
-        let minimumTop: number | null = null;
-        let maximumTop: number | null = null;
+        let minimumTop: number = NaN;
+        let maximumTop: number = NaN;
+
+        let minimumAltitude: number = NaN;
+        let maximumAltitude: number = NaN;
 
         for(let path of paths)
         for(let coordinate of path) {
+            if(window.isNaN(minimumAltitude) || coordinate.altitude < minimumAltitude)
+                minimumAltitude = coordinate.altitude;
+                
+            if(window.isNaN(maximumAltitude) || coordinate.altitude > maximumAltitude)
+                maximumAltitude = coordinate.altitude;
+
             coordinate.projection = Projection.projectToPixelCoordinate(2, coordinate.latitude, coordinate.longitude);
 
-            if(startLeft === null)
+            if(window.isNaN(startLeft))
                 startLeft = coordinate.projection.left;
                 
-            if(startTop === null)
+            if(window.isNaN(startTop))
                 startTop = coordinate.projection.top;
 
-            if(minimumLeft === null || coordinate.projection.left < minimumLeft)
+            if(window.isNaN(minimumLeft) || coordinate.projection.left < minimumLeft)
                 minimumLeft = coordinate.projection.left;
                 
-            if(maximumLeft === null || coordinate.projection.left > maximumLeft)
+            if(window.isNaN(maximumLeft) || coordinate.projection.left > maximumLeft)
                 maximumLeft = coordinate.projection.left;
 
-            if(minimumTop === null || coordinate.projection.top < minimumTop)
+            if(window.isNaN(minimumTop) || coordinate.projection.top < minimumTop)
                 minimumTop = coordinate.projection.top;
                 
-            if(maximumTop === null || coordinate.projection.top > maximumTop)
+            if(window.isNaN(maximumTop) || coordinate.projection.top > maximumTop)
                 maximumTop = coordinate.projection.top;
         }
-
-        if(minimumLeft === null || maximumLeft === null)
-            return;
-
-        if(minimumTop === null || maximumTop === null)
-            return;
-
-        if(startLeft === null || startTop === null)
-            throw new Error("fuck you");
 
         const centerLeft = (maximumLeft - minimumLeft) / 2;
         const centerTop = (maximumTop - minimumTop) / 2;
 
-        this.bufferers = paths.map((path) => {
-            return RendererBuffer.initBuffers(this.context, path.map((coordinate) => {
+        const green = [ 0, 1, 0, 1 ];
+        const red = [ 1, 0, 0, 1 ];
+
+        this.paths = paths.map((path) => {
+            const points: any[] = [];
+
+            let fullDistance = 0;
+
+            path.forEach((coordinate, index) => {
                 if(startLeft === null || startTop === null)
                     throw new Error("fuck you");
 
-                return {
-                    x: (startLeft - coordinate.projection.left) - (centerLeft),
-                    y: (startTop - coordinate.projection.top) + (centerTop),
-                    z: 1
+                const colorMultiplier = (coordinate.altitude - minimumAltitude) / (maximumAltitude - minimumAltitude);
+
+                console.log({ max: (maximumAltitude - minimumAltitude)});
+
+                const x = (startLeft - coordinate.projection.left) - (centerLeft);
+                const y = (startTop - coordinate.projection.top) + (centerTop);
+                const z = (coordinate.altitude - minimumAltitude);
+
+                const distanceX = (index === 0)?(0):(Math.abs(x - points[index - 1].x));
+                const distanceY = (index === 0)?(0):(Math.abs(y - points[index - 1].y));
+
+                const distance = Math.sqrt(Math.pow(distanceX, 2) + Math.pow(distanceY, 2));
+
+                console.log({distance});
+
+                const point = {
+                    x, y, z,
+
+                    distanceX,
+                    distanceY,
+
+                    distance,
+                    distanceStart: fullDistance,
+
+                    verticles: null,
+                    color: [
+                        (green[0] + (red[0] - green[0]) * colorMultiplier) - (23 / 255),
+                        (green[1] + (red[1] - green[1]) * colorMultiplier) - (26 / 255),
+                        (green[2] + (red[2] - green[2]) * colorMultiplier) - (35 / 255),
+                        1.0
+                    ]
                 };
-            }))
+
+                points.push(point);
+
+                fullDistance += distance;
+            });
+
+            return {
+                points,
+                fullDistance
+            };
         });
+
+        this.animations = animations;
+
+        this.bufferers = this.paths.map((path) => RendererBuffer.initBuffers(this.context, path, this.getAnimationFrame()));
+    };
+
+    private getAnimationFrame(now = 0): AnimationFrame {
+        const frame: AnimationFrame = {
+            distanceFraction: 1,
+            elevationFraction: 1
+        };
+
+        const delta = now - this.previous;
+
+        this.previous = now;
+
+        for(let index = 0; index < this.animations.length; index++) {
+            const animation = this.animations[index];
+
+            if(!animation.progress) {
+                animation.progress = {
+                    elapsed: 0
+                };
+            }
+
+            animation.progress.elapsed += delta;
+
+            let fraction = Math.max(Math.min(animation.progress.elapsed / animation.interval, 1), 0);
+
+            if(!animation.forwards)
+                fraction = 1 - fraction;
+
+            if(fraction === ((animation.forwards)?(1):(0))) {
+                if(!animation.repeat) {
+                    this.animations.splice(index, 1);
+                    
+                    index--;
+                }
+                else {
+                    animation.forwards = !animation.forwards;
+                    delete animation.progress;
+                }
+            }
+
+            switch(animation.type) {
+                case "distance": {
+                    frame.distanceFraction = fraction;
+                    
+                    break;
+                }
+
+                case "elevation": {
+                    frame.elevationFraction = fraction;
+                    
+                    break;
+                }
+            }
+        }
+
+        return frame;
     };
 
     public setRawPaths(paths: any[][]) {
         this.bufferers = paths.map((path) => {
-            return RendererBuffer.initBuffers(this.context, path);
+            return RendererBuffer.initBuffers(this.context, path, this.getAnimationFrame());
         });
     };
 
@@ -132,6 +237,9 @@ export default class Renderer {
     };
 
     private render(now: number) {
+        if(this.bufferers.length !== this.paths.length || this.animations.length)
+            this.bufferers = this.paths.map((path) => RendererBuffer.initBuffers(this.context, path, this.getAnimationFrame(now)));
+
         RendererScene.drawScene(this.context, this.programInfo, this.bufferers, {
             x: this.deltaX,
             y: this.deltaY

@@ -1,22 +1,51 @@
+import { AnimationFrame } from "./animation";
+
 declare const vec3: any;
 
 export class RendererBuffer {
-    static initBuffers(gl: WebGLRenderingContext, path: any[]) {
-        console.log(path);
+    static initBuffers(gl: WebGLRenderingContext, path: any, animationFrame: AnimationFrame) {
         const positions = [];
         const faceColors = [];
         const indices = [];
 
         let indexForIndices = 0;
 
-        for(let index = 1; index < path.length; index++) {
-            const from = path[index - 1];
-            const to = path[index];
+        let distance = 0;
 
-            console.log({ to });
+        const breakingPoint = path.fullDistance * animationFrame.distanceFraction;
 
-            const from3 = vec3.fromValues(from.y, from.x, from.z);
-            const to3 = vec3.fromValues(to.y, to.x, to.z);
+        for(let index = 1; index < path.points.length; index++) {
+            const from = path.points[index - 1];
+            const to = path.points[index];
+
+            const fromElevation = from.z * animationFrame.elevationFraction;
+            const toElevation = to.z * animationFrame.elevationFraction;
+
+            let pointFraction = 1.0;
+
+            distance = to.distanceStart;
+
+            if(distance > breakingPoint)
+                break;
+
+            if(breakingPoint < (distance + to.distance))
+                pointFraction = Math.min((breakingPoint - to.distanceStart) / to.distance, 1);
+
+            const difference = {
+                x: (to.x - from.x),
+                y: (to.y - from.y)
+            };
+
+            const from3 = vec3.fromValues(
+                from.y,
+                from.x,
+                fromElevation
+            );
+            const to3 = vec3.fromValues(
+                from.y + (difference.y * pointFraction),
+                from.x + (difference.x * pointFraction),
+                toElevation
+            );
           
             const direction = vec3.sub(vec3.create(), to3, from3);
             const perpendicular = vec3.normalize(vec3.create(), [-direction[1], direction[0], 0]);
@@ -34,18 +63,18 @@ export class RendererBuffer {
 
             // the main tunnel
             {
+                // left wall
                 positions.push(
-                    // left face
                     bottomVertices[0][0], // back left Y (bottom)
                     0.0,
                     bottomVertices[0][1], // back left X (bottom)
 
                     bottomVertices[0][0], // back left Y (top)
-                    from.z,
+                    fromElevation,
                     bottomVertices[0][1], // back left X (top)
 
                     bottomVertices[1][0], // front left Y (top)
-                    to.z,
+                    toElevation,
                     bottomVertices[1][1], // front left X (top)
                     
                     bottomVertices[1][0], // front left Y (bottom)
@@ -53,18 +82,18 @@ export class RendererBuffer {
                     bottomVertices[1][1] // front left X (bottom)
                 );
 
+                // right wall
                 positions.push(
-                    // right face
                     topVertices[0][0], // back right Y (bottom)
                     0.0,
                     topVertices[0][1], // back right X (bottom)
 
                     topVertices[0][0], // back right Y (top)
-                    from.z,
+                    fromElevation,
                     topVertices[0][1], // back right X (top)
 
                     topVertices[1][0], // front right Y (top)
-                    to.z,
+                    toElevation,
                     topVertices[1][1], // front right X (top)
                     
                     topVertices[1][0], // front right Y (bottom)
@@ -72,6 +101,7 @@ export class RendererBuffer {
                     topVertices[1][1] // front right X (bottom)
                 );
             
+                // top face
                 positions.push(
                     topVertices[0][0], // back right Y
                     topVertices[0][2],
@@ -89,11 +119,31 @@ export class RendererBuffer {
                     bottomVertices[0][2],
                     bottomVertices[0][1] // back left X
                 );
+            
+                // bottom face
+                positions.push(
+                    topVertices[0][0], // back right Y
+                    0,
+                    topVertices[0][1], // back right X
+
+                    topVertices[1][0], // top right Y
+                    0,
+                    topVertices[1][1], // top right X
+
+                    bottomVertices[1][0], // top left Y
+                    0,
+                    bottomVertices[1][1], // top left X,
+
+                    bottomVertices[0][0], // back left Y
+                    0,
+                    bottomVertices[0][1] // back left X
+                );
 
                 faceColors.push(...[
-                    [23 / 255, 26 / 255, 35 / 255, 1.0], // Front face: white
-                    [23 / 255, 26 / 255, 35 / 255, 1.0], // Back face: red
-                    [187 / 255, 135 / 255, 252 / 255, 1.0]
+                    to.color ?? [23 / 255, 26 / 255, 35 / 255, 1.0], // left wall
+                    to.color ?? [23 / 255, 26 / 255, 35 / 255, 1.0], // right wall
+                    [187 / 255, 135 / 255, 252 / 255, 1.0], // top face
+                    to.color ?? [23 / 255, 26 / 255, 35 / 255, 1.0] // bottom face
                 ]);
 
                 indices.push(...([
@@ -103,9 +153,11 @@ export class RendererBuffer {
                     4, 6, 7, // back
                     8, 9, 10,
                     8, 10, 11, // top
+                    12, 13, 14,
+                    12, 14, 15, // bottom
                 ].map((number) => indexForIndices + number)));
 
-                indexForIndices += 12;
+                indexForIndices += 16;
             }
 
             to.verticles = {
@@ -177,8 +229,8 @@ export class RendererBuffer {
                 );
 
                 faceColors.push(...[
-                    [23 / 255, 26 / 255, 35 / 255, 1.0], // Front face: white
-                    [23 / 255, 26 / 255, 35 / 255, 1.0], // Back face: red
+                    to.color ?? [23 / 255, 26 / 255, 35 / 255, 1.0], // Front face: white
+                    to.color ?? [23 / 255, 26 / 255, 35 / 255, 1.0], // Back face: red
                     [187 / 255, 135 / 255, 252 / 255, 1.0]
                 ]);
 
@@ -194,7 +246,7 @@ export class RendererBuffer {
                 indexForIndices += 12;
             }
             
-            if(index === path.length - 1) {
+            if(index === path.points.length - 1) {
                 // final wall
 
                 positions.push(
@@ -204,11 +256,11 @@ export class RendererBuffer {
                     topVertices[1][1], // back left X (bottom)
 
                     topVertices[1][0], // back left Y (top)
-                    to.z,
+                    toElevation,
                     topVertices[1][1], // back left X (top)
 
                     bottomVertices[1][0], // front left Y (top)
-                    to.z,
+                    toElevation,
                     bottomVertices[1][1], // front left X (top)
                     
                     bottomVertices[1][0], // front left Y (bottom)
@@ -217,7 +269,7 @@ export class RendererBuffer {
                 );
 
                 faceColors.push(...[
-                    [23 / 255, 26 / 255, 35 / 255, 1.0]
+                    to.color ?? [23 / 255, 26 / 255, 35 / 255, 1.0]
                 ]);
 
                 indices.push(...([
@@ -250,7 +302,7 @@ export class RendererBuffer {
                 );
 
                 faceColors.push(...[
-                    [23 / 255, 26 / 255, 35 / 255, 1.0]
+                    to.color ?? [23 / 255, 26 / 255, 35 / 255, 1.0]
                 ]);
 
                 indices.push(...([

@@ -37,7 +37,7 @@ export class RendererScene {
         mat4.translate(
             modelViewMatrix, // destination matrix
             modelViewMatrix, // matrix to translate
-            [-0.0, 0.0, -6.0]
+            [0.0, 0.0, -20.0]
         ); // amount to translate
 
         mat4.rotate(

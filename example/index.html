@@ -37,11 +37,11 @@
             const canvas = document.getElementById("canvas");
 
             if(canvas) {
-                const paths = sessions.map((session) => session.locations.map((location) => {
+                const paths = sessions.map((session) => session.locations.map((location, index) => {
                     return {
                         latitude: location.coords.latitude,
                         longitude: location.coords.longitude,
-                        altitude: location.coords.altitude
+                        altitude: location.coords.altitude + (index / 100)
                     };
                 }));
 
@@ -55,7 +55,14 @@
                     ]
                 ]);*/
 
-                renderer.setPaths(paths);
+                renderer.setPaths(paths, [
+                    {
+                        type: "elevation",
+                        forwards: true,
+                        interval: 1 * 1000,
+                        repeat: true
+                    }
+                ]);
             }
         </script>
     </body>
