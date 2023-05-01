@@ -1,7 +1,9 @@
+import { RendererOptions } from "../renderer";
+
 declare const mat4: any;
 
 export class RendererScene {
-    static drawScene(gl: WebGLRenderingContext, programInfo: any, bufferers: any, deltas: any) {
+    static drawScene(gl: WebGLRenderingContext, programInfo: any, bufferers: any, options: RendererOptions, deltas: any) {
         gl.clearColor(0.0, 0.0, 0.0, 1.0); // Clear to black, fully opaque
         gl.clearDepth(1.0); // Clear everything
         gl.enable(gl.DEPTH_TEST); // Enable depth testing
@@ -18,7 +20,7 @@ export class RendererScene {
         // and we only want to see objects between 0.1 units
         // and 100 units away from the camera.
 
-        const fieldOfView = (45 * Math.PI) / 180; // in radians
+        const fieldOfView = ((options.cameraFov ?? 45) * Math.PI) / 180; // in radians
         const aspect = (gl.canvas as HTMLCanvasElement).clientWidth / (gl.canvas as HTMLCanvasElement).clientHeight;
         const zNear = 0.1;
         const zFar = 10000.0;
@@ -37,8 +39,22 @@ export class RendererScene {
         mat4.translate(
             modelViewMatrix, // destination matrix
             modelViewMatrix, // matrix to translate
-            [0.0, 0.0, -20.0]
-        ); // amount to translate
+            options.cameraTranslation ?? [0.0, 0.0, -20.0]
+        );
+
+        if(options.cameraRotation) {
+            for(let index = 0; index < 3; index++) {
+                const affects = Array(3).fill(0);
+                affects[index] = 1;
+
+                mat4.rotate(
+                    modelViewMatrix, // destination matrix
+                    modelViewMatrix, // matrix to translate
+                    options.cameraRotation[index],
+                    affects
+                );
+            }
+        }
 
         mat4.rotate(
             modelViewMatrix,

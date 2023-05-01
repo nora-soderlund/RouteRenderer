@@ -17,6 +17,12 @@ export type RendererOptions = {
 
     elevationGradient?: boolean;
     elevationGradientColors?: number[][];
+
+    keepMinimumAltitude?: boolean;
+
+    cameraFov?: number;
+    cameraTranslation?: number[];
+    cameraRotation?: number[];
 };
 
 export default class Renderer {
@@ -54,7 +60,7 @@ export default class Renderer {
         window.requestAnimationFrame(this.render.bind(this));
     };
 
-    public setPaths(paths: any[][], animations: Animation[]) {
+    public setPaths(paths: any[][], animations: Animation[], project: boolean = true) {
         let startLeft: number = NaN;
         let startTop: number = NaN;
         
@@ -69,13 +75,22 @@ export default class Renderer {
 
         for(let path of paths)
         for(let coordinate of path) {
+            if(!project) {
+                coordinate.projection = {
+                    left: coordinate.x,
+                    top: coordinate.y
+                };
+
+                coordinate.altitude = coordinate.z;
+            }
+            else
+                coordinate.projection = Projection.projectToPixelCoordinate(2, coordinate.latitude, coordinate.longitude);
+
             if(window.isNaN(minimumAltitude) || coordinate.altitude < minimumAltitude)
                 minimumAltitude = coordinate.altitude;
                 
             if(window.isNaN(maximumAltitude) || coordinate.altitude > maximumAltitude)
                 maximumAltitude = coordinate.altitude;
-
-            coordinate.projection = Projection.projectToPixelCoordinate(2, coordinate.latitude, coordinate.longitude);
 
             if(window.isNaN(startLeft))
                 startLeft = coordinate.projection.left;
@@ -101,6 +116,9 @@ export default class Renderer {
 
         const green = [ 0, 1, 0, 1 ];
         const red = [ 1, 0, 0, 1 ];
+
+        if(this.options.keepMinimumAltitude)
+            minimumAltitude = 0;
 
         this.paths = paths.map((path) => {
             const points: any[] = [];
@@ -225,12 +243,6 @@ export default class Renderer {
         return frame;
     };
 
-    public setRawPaths(paths: any[][]) {
-        this.bufferers = paths.map((path) => {
-            return RendererBuffer.initBuffers(this.context, path, this.options, this.getAnimationFrame());
-        });
-    };
-
     private registerMouseEvents() {
         let mouseDown = false;
         let lastMouseX: number | null = null;
@@ -266,7 +278,7 @@ export default class Renderer {
         if(this.bufferers.length !== this.paths.length || this.animations.length)
             this.bufferers = this.paths.map((path) => RendererBuffer.initBuffers(this.context, path, this.options, this.getAnimationFrame(now)));
 
-        RendererScene.drawScene(this.context, this.programInfo, this.bufferers, {
+        RendererScene.drawScene(this.context, this.programInfo, this.bufferers, this.options, {
             x: this.deltaX,
             y: this.deltaY
         });
