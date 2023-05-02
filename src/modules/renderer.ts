@@ -20,6 +20,8 @@ export type RendererOptions = {
 
     keepMinimumAltitude?: boolean;
 
+    projectionZoomLevel?: number;
+
     cameraFov?: number;
     cameraTranslation?: number[];
     cameraRotation?: number[];
@@ -84,7 +86,7 @@ export default class Renderer {
                 coordinate.altitude = coordinate.z;
             }
             else
-                coordinate.projection = Projection.projectToPixelCoordinate(2, coordinate.latitude, coordinate.longitude);
+                coordinate.projection = Projection.projectToPixelCoordinate(this.options.projectionZoomLevel ?? 2, coordinate.latitude, coordinate.longitude);
 
             if(window.isNaN(minimumAltitude) || coordinate.altitude < minimumAltitude)
                 minimumAltitude = coordinate.altitude;
@@ -130,9 +132,9 @@ export default class Renderer {
 
                 console.log({ max: (maximumAltitude - minimumAltitude)});
 
-                const x = (startLeft - coordinate.projection.left) - (centerLeft);
-                const y = (startTop - coordinate.projection.top) + (centerTop);
-                const z = (coordinate.altitude - minimumAltitude);
+                const x = ((startLeft > coordinate.projection.left)?(startLeft - coordinate.projection.left):(coordinate.projection.left - startLeft)) - (centerLeft);
+                const y = ((startTop < coordinate.projection.top)?(startTop - coordinate.projection.top):(coordinate.projection.top - startTop)) + (centerTop);
+                const z = (coordinate.altitude - minimumAltitude) * ((this.options.projectionZoomLevel ?? 2) / 100);
 
                 const distanceX = (index === 0)?(0):(Math.abs(x - points[index - 1].x));
                 const distanceY = (index === 0)?(0):(Math.abs(y - points[index - 1].y));

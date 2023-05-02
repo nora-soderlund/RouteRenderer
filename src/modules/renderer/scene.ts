@@ -42,32 +42,25 @@ export class RendererScene {
             options.cameraTranslation ?? [0.0, 0.0, -20.0]
         );
 
-        if(options.cameraRotation) {
-            for(let index = 0; index < 3; index++) {
-                const affects = Array(3).fill(0);
-                affects[index] = 1;
-
-                mat4.rotate(
-                    modelViewMatrix, // destination matrix
-                    modelViewMatrix, // matrix to translate
-                    options.cameraRotation[index],
-                    affects
-                );
-            }
-        }
-
         mat4.rotate(
             modelViewMatrix,
             modelViewMatrix,
-            deltas.y * 0.01,
+            (options.cameraRotation?.[1] ?? 0) + (deltas.y * 0.01),
             [1, 0, 0]
         );
         
         mat4.rotate(
             modelViewMatrix,
             modelViewMatrix,
-            deltas.x * 0.01,
+            (options.cameraRotation?.[0] ?? 0) + (deltas.x * 0.01),
             [0, 1, 0]
+        );
+        
+        mat4.rotate(
+            modelViewMatrix,
+            modelViewMatrix,
+            (options.cameraRotation?.[2] ?? 0),
+            [0, 0, 1]
         );
 
         for(let buffers of bufferers) {

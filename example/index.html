@@ -31,6 +31,8 @@
     <body>
         <canvas id="canvas1" width="1920" height="1080"></canvas>
         <canvas id="canvas2" width="1920" height="1080"></canvas>
+        <canvas id="canvas3" width="1920" height="1080"></canvas>
+        <canvas id="canvas4" width="1920" height="1080"></canvas>
 
         <script
             src="https://cdnjs.cloudflare.com/ajax/libs/gl-matrix/2.8.1/gl-matrix-min.js"
@@ -40,18 +42,19 @@
 
         <script type="module">
             import { RouteRenderer } from "../dist/index.js";
-            import sessions from "./activities_009569ed-3cb9-431b-81e1-42ba4813161e.json" assert { type: "json" };
-
-            
-            const paths = sessions.map((session) => session.locations.map((location, index) => {
-                return {
-                    latitude: location.coords.latitude,
-                    longitude: location.coords.longitude,
-                    altitude: location.coords.altitude + (index / 100),
-                };
-            }));
+            import sessions1 from "./activities_009569ed-3cb9-431b-81e1-42ba4813161e.json" assert { type: "json" };
+            import sessions2 from "./activities_034e6944-b3bb-40b1-bd90-8a7fa08de0c5.json" assert { type: "json" };
+            import sessions3 from "./activities_70300cf5-614d-4597-9b23-b57fa0426fa2.json" assert { type: "json" };
 
             {
+                const paths = sessions1.map((session) => session.locations.map((location, index) => {
+                    return {
+                        latitude: location.coords.latitude,
+                        longitude: location.coords.longitude,
+                        altitude: location.coords.altitude + (index * .5)
+                    };
+                }));
+
                 const canvas = document.getElementById("canvas1");
 
                 const renderer = new RouteRenderer(canvas, {
@@ -60,28 +63,89 @@
 
                     elevationGradient: true,
 
-                    cameraRotation: [ .5, 0, 0 ]
+                    cameraRotation: [ 3, .5, 0 ],
+
+                    cameraFov: 20
                 });
 
                 renderer.setPaths(paths, [
                     {
                         type: "elevation",
                         forwards: true,
-                        interval: 1 * 1000,
+                        interval: 2 * 1000,
                         repeat: true
                     }
                 ]);
             }
 
             {
+                const paths = sessions1.map((session) => session.locations.map((location, index) => {
+                    return {
+                        latitude: location.coords.latitude,
+                        longitude: location.coords.longitude,
+                        altitude: location.coords.altitude + (index * .5)
+                    };
+                }));
+
                 const canvas = document.getElementById("canvas2");
+
+                const renderer = new RouteRenderer(canvas, {
+                    topColor: [ 187, 135, 252, 255 ],
+                    endBlockColor: [ 0, 0, 0, 255 ],
+
+                    elevationGradient: true,
+
+                    cameraRotation: [ 3, .5, 0 ],
+
+                    cameraFov: 20
+                });
+
+                renderer.setPaths(paths, [
+                    {
+                        type: "distance",
+                        forwards: true,
+                        interval: 2  * 1000,
+                        repeat: true
+                    }
+                ]);
+            }
+
+            {
+                const paths = sessions2.map((session) => session.locations.map((location, index) => {
+                    return {
+                        latitude: location.coords.latitude,
+                        longitude: location.coords.longitude,
+                        altitude: location.coords.altitude
+                    };
+                }));
+
+                const canvas = document.getElementById("canvas3");
+
+                const renderer = new RouteRenderer(canvas, {
+                    topColor: [ 187, 135, 252, 255 ],
+                    wallColor: [ 23, 26, 35, 255 ],
+
+                    projectionZoomLevel: 4,
+
+                    keepMinimumAltitude: true,
+
+                    cameraFov: 45,
+                    cameraRotation: [ 0, 2, 0 ],
+                    cameraTranslation: [ 0, 0, -30 ]
+                });
+
+                renderer.setPaths(paths, []);
+            }
+
+            /*{
+                const canvas = document.getElementById("canvas4");
 
                 const renderer = new RouteRenderer(canvas, {
                     keepMinimumAltitude: true,
 
                     cameraFov: 20,
 
-                    cameraRotation: [ .5, 0, 0 ]
+                    cameraRotation: [ 0, .5, 0 ]
                 });
 
                 renderer.setPaths([
@@ -91,6 +155,34 @@
                         { x: .5, y: 1.5, z: 2 },
                     ]
                 ], [], false);
+            }*/
+
+            {
+                const paths = sessions3.map((session) => session.locations.map((location, index) => {
+                    return {
+                        latitude: location.coords.latitude,
+                        longitude: location.coords.longitude,
+                        altitude: location.coords.altitude
+                    };
+                }));
+
+                const canvas = document.getElementById("canvas4");
+
+                const renderer = new RouteRenderer(canvas, {
+                    topColor: [ 187, 135, 252, 255 ],
+                    wallColor: [ 23, 26, 35, 255 ],
+
+                    projectionZoomLevel: 4,
+
+                    keepMinimumAltitude: true,
+                    elevationGradient: true,
+
+                    cameraFov: 45,
+                    cameraRotation: [ -1.2, 2, 0 ],
+                    cameraTranslation: [ 0, 0, -80 ]
+                });
+
+                renderer.setPaths(paths, []);
             }
         </script>
     </body>
