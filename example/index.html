@@ -79,7 +79,9 @@
                 const renderer = new RouteRenderer(canvas, {
                     keepMinimumAltitude: true,
 
-                    cameraFov: 20
+                    cameraFov: 20,
+
+                    cameraRotation: [ .5, 0, 0 ]
                 });
 
                 renderer.setPaths([
