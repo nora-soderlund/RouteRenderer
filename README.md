@@ -1,6 +1,8 @@
 # RouteRenderer
 A pure JavaScript package to render paths, directions, routes, or lines in 3d using nothing but WebGL.
 
+https://user-images.githubusercontent.com/78360666/236035333-a6c91394-8e8b-4482-877f-3ea463873bb6.mp4
+
 # Get started
 ## Prerequisites
 - gl-matrix must be loaded before this package, e.g.:
