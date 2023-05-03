@@ -15,6 +15,7 @@
   ],
   "author": "Nora Söderlund",
   "license": "AGPL-3.0-or-later",
+  "homepage": "https://github.com/nora-soderlund/RouteRenderer#readme",
   "devDependencies": {
     "@types/node": "^18.16.3",
     "typescript": "^5.0.4"
