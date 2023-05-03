@@ -1,7 +1,7 @@
 {
   "name": "route-renderer",
   "version": "0.9.0",
-  "description": "A 3D route renderer using WebGL.",
+  "description": "A pure JavaScript package to render paths, directions, routes, or lines in 3d using nothing but WebGL.",
   "main": "index.js",
   "scripts": {
     "build": "npx tsc",
@@ -14,14 +14,9 @@
     "route"
   ],
   "author": "Nora Söderlund",
-  "license": "UNLICENSED",
+  "license": "AGPL-3.0-or-later",
   "devDependencies": {
-    "@types/gl-matrix": "^3.2.0",
     "@types/node": "^18.16.3",
-    "typescript": "^5.0.4",
-    "webgl-strict-types": "^1.0.5"
-  },
-  "dependencies": {
-    "gl-matrix": "^3.4.3"
+    "typescript": "^5.0.4"
   }
 }
