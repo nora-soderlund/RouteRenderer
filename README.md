@@ -49,6 +49,7 @@ A pure JavaScript package to render paths, directions, routes, or lines in 3d us
 
 ### Methods
 - `setPaths(paths: any[][], animations: Animation[] | null = null, project: boolean = true)`
+
   Replaces the current paths with the input paths, note that this is a two dimensional array, each first dimensional item declares a new path, e.g. a leg of a direction step, second dimensional item declares an array of coordinates.
 
   X and Y are expected to be latitude and longitudes, however, if `project` is passed as false, then X and Y are expected to be raw units. The projection uses the [World Geodetic System WGS84](https://en.wikipedia.org/wiki/World_Geodetic_System) standard, [same as Google Maps](https://developers.google.com/maps/documentation/javascript/coordinates).
@@ -63,6 +64,7 @@ A pure JavaScript package to render paths, directions, routes, or lines in 3d us
 - `leftWallColor?: number[];`
 - `rightWallColor?: number[];`
 - `wallColor?: number[];`
+
   Colors in the format of RGBA arrays, e.g. `[ 255, 0, 0, 255 ]` for solid red.
   
   `leftWallColor`, `rightWallColor`, `startBlockColor`, and `endBlockColor` takes priority over `wallColor`. 
@@ -70,60 +72,74 @@ A pure JavaScript package to render paths, directions, routes, or lines in 3d us
   Default colors varies but are high contrast and should be changed.
 
 - `wallWidth?: number;`
+
   Defines how wide the walls should be, default is `0.1` units.
 
 - `elevationGradient?: boolean;`
 - `elevationGradientColors?: number[][];`
+
   Defines if the walls should have a gradient color for elevation. The color array only accepts 2 items, in the order of lowest (from) to highest (to).
 
   Default, if enabled, is solid green to solid red.
 
 - `keepMinimumAltitude?: boolean;`
+
   By default, the path is anchored by the lowest altitude to depth 0. 
 
 - `projectionZoomLevel?: number;`
+
   Defines the zoom level for the Mercator world coordinate projection, default is 4.
 
   Increase this to get a more detailed (but larger) model.
 
 - `cameraFov?: number;`
+
   Defines the camera FOV, default is 45.
 
 - `cameraTranslation?: number[];`
 - `cameraRotation?: number[];`
+
   Defines the camera translation and rotation in the format of XYZ, e.g.: `[ 0, 0, 0 ]`.
 
 - `premultipliedAlpha?: boolean;`
+
   A boolean value that indicates that the page compositor will assume the drawing buffer contains colors with pre-multiplied alpha. See [MDN](https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/getContext).
   
 
 - `grid?: boolean;`
 - `gridColor?: number[];`
 - `gridPadding?: number;`
+
   Defines if a flat panel should cover the ground, default is false.
 
   If enabled, padding is set to 1 unit default.
 
 ## Animation
 - `type: "distance" | "elevation";`
+
   Defines the type of the animation, whether to animate the elevation or the distance.
 
 - `forwards: boolean;`
+
   Defines the direction to move the animation, if repeat is enabled, then this is switched on each animation interval.
 
   Default is true.
 
 - `interval: number;`
+
   Defines the animation interval in milliseconds.
 
 - `repeat: boolean;`
+
   Keeps the animation running forever, if enabled, it switches the forwards property on each animation interval.
 
 - `progress?: AnimationProgress;`
+
   Used internally to track the animation progress, however, can be used to alter the start or current progress.
 
 ## AnimationProgress
 - `elapsed: number;`
+
   Defines how many milliseconds has surpassed since the animation start.
 
   If the interval is 2000 milliseconds and elapsed is set to 1000, the animation will have reached 50%.
