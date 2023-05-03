@@ -1,10 +1,11 @@
-import { RendererOptions } from "../renderer";
-import { AnimationFrame } from "./animation";
+import { RendererOptions } from "../../renderer.js";
+import { AnimationFrame } from "../animation.js";
+import { RendererBuffers } from "../buffers.js";
 
 declare const vec3: any;
 
-export class RendererBuffer {
-    static initBuffers(gl: WebGLRenderingContext, path: any, options: RendererOptions, animationFrame: AnimationFrame) {
+export class RendererPathModel {
+    static createBuffers(gl: WebGLRenderingContext, path: any, options: RendererOptions, animationFrame: AnimationFrame) {
         const positions = [];
         const faceColors = [];
         const indices = [];
@@ -26,11 +27,18 @@ export class RendererBuffer {
 
             distance = to.distanceStart;
 
+            const leftWallColor = to.color ?? (options.leftWallColor ?? options.wallColor)?.map((index) => index / 255) ?? [ 0, 1, 0, 1 ];
+            const rightWallColor = to.color ?? (options.rightWallColor ?? options.wallColor)?.map((index) => index / 255) ?? [ 0, 0, 1, 1 ];
+            const topColor = options.topColor?.map((index) => index / 255) ?? [ 1, 0, 0, 1 ];
+            const bottomColor = options.bottomColor?.map((index) => index / 255) ?? [ 0, 0, 0, 1 ];
+            const endBlockColor = to.color ?? (options.endBlockColor ?? options.wallColor)?.map((index) => index / 255) ?? [ 0, 0, 0, 1 ];
+            const startBlockColor = to.color ?? (options.startBlockColor ?? options.wallColor)?.map((index) => index / 255) ?? [ 0, 0, 0, 1 ];
+
             if(distance > breakingPoint)
                 break;
 
             if(breakingPoint < (distance + to.distance))
-                pointFraction = Math.min((breakingPoint - to.distanceStart) / to.distance, 1);
+                pointFraction = Math.max(0, Math.min((breakingPoint - to.distanceStart) / to.distance, 1));
 
             const difference = {
                 x: (to.x - from.x),
@@ -42,6 +50,7 @@ export class RendererBuffer {
                 from.x,
                 fromElevation
             );
+            
             const to3 = vec3.fromValues(
                 from.y + (difference.y * pointFraction),
                 from.x + (difference.x * pointFraction),
@@ -50,7 +59,7 @@ export class RendererBuffer {
           
             const direction = vec3.sub(vec3.create(), to3, from3);
             const perpendicular = vec3.normalize(vec3.create(), [-direction[1], direction[0], 0]);
-            const halfWidth = .05;
+            const halfWidth = (options.wallWidth ?? .1) / 2;
           
             const topVertices = [
                 vec3.add(vec3.create(), from3, vec3.scale(vec3.create(), perpendicular, halfWidth)),
@@ -141,10 +150,10 @@ export class RendererBuffer {
                 );
 
                 faceColors.push(...[
-                    options.leftWallColor?.map((index) => index / 255) ?? to.color ?? [ 0, 1, 0, 1 ], // left wall
-                    options.rightWallColor?.map((index) => index / 255) ?? to.color ?? [ 0, 0, 1, 1 ], // right wall
-                    options.topColor?.map((index) => index / 255) ?? [ 1, 0, 0, 1 ], // top face
-                    options.bottomColor?.map((index) => index / 255) ?? [ 0, 0, 0, 1 ] // bottom face
+                    leftWallColor, // left wall
+                    rightWallColor, // right wall
+                    topColor, // top face
+                    bottomColor // bottom face
                 ]);
 
                 indices.push(...([
@@ -249,10 +258,10 @@ export class RendererBuffer {
                 );
 
                 faceColors.push(...[
-                    options.leftWallColor?.map((index) => index / 255) ?? to.color ?? [ 0, 1, 0, 1 ], // Front face: white
-                    options.rightWallColor?.map((index) => index / 255) ?? to.color ?? [ 0, 0, 1, 1 ], // Back face: red
-                    options.topColor?.map((index) => index / 255) ?? [ 1, 0, 0, 1 ],
-                    options.bottomColor?.map((index) => index / 255) ?? [ 0, 0, 0, 1 ] // bottom face
+                    leftWallColor, // Front face: white
+                    rightWallColor, // Back face: red
+                    topColor,
+                    bottomColor // bottom face
                 ]);
 
                 indices.push(...([
@@ -292,7 +301,7 @@ export class RendererBuffer {
                 );
 
                 faceColors.push(...[
-                    options.endBlockColor?.map((index) => index / 255) ?? to.color ?? [ 0, 0, 0, 1 ]
+                    endBlockColor
                 ]);
 
                 indices.push(...([
@@ -325,7 +334,7 @@ export class RendererBuffer {
                 );
 
                 faceColors.push(...[
-                    options.startBlockColor?.map((index) => index / 255) ?? to.color ?? [ 0, 0, 0, 1 ]
+                    startBlockColor
                 ]);
 
                 indices.push(...([
@@ -337,11 +346,11 @@ export class RendererBuffer {
             }
         }
 
-        const positionBuffer = this.initPositionBuffer(gl, positions);
+        const positionBuffer = RendererBuffers.initPositionBuffer(gl, positions);
 
-        const colorBuffer = this.initColorBuffer(gl, faceColors);
+        const colorBuffer = RendererBuffers.initColorBuffer(gl, faceColors);
 
-        const indexBuffer = this.initIndexBuffer(gl, indices);
+        const indexBuffer = RendererBuffers.initIndexBuffer(gl, indices);
 
         return {
             verticles: positions.length / 2,
@@ -349,58 +358,5 @@ export class RendererBuffer {
             color: colorBuffer,
             indices: indexBuffer,
         };
-    }
-
-    static initPositionBuffer(gl: WebGLRenderingContext, positions: number[]) {
-        // Create a buffer for the square's positions.
-        const positionBuffer = gl.createBuffer();
-
-        // Select the positionBuffer as the one to apply buffer
-        // operations to from here out.
-        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-
-        // Now pass the list of positions into WebGL to build the
-        // shape. We do this by creating a Float32Array from the
-        // JavaScript array, then use it to fill the current buffer.
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
-
-        return positionBuffer;
-    }
-
-    static initColorBuffer(gl: WebGLRenderingContext, faceColors: any[]) {
-        // Convert the array of colors into a table for all the vertices.
-
-        var colors: any[] = [];
-
-        for (var j = 0; j < faceColors.length; ++j) {
-            const c = faceColors[j];
-            // Repeat each color four times for the four vertices of the face
-            colors = colors.concat(c, c, c, c);
-        }
-
-        const colorBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
-
-        return colorBuffer;
-    }
-
-    static initIndexBuffer(gl: WebGLRenderingContext, indices: number[]) {
-        const indexBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-
-        // This array defines each face as two triangles, using the
-        // indices into the vertex array to specify each triangle's
-        // position.
-
-        // Now send the element array to GL
-
-        gl.bufferData(
-            gl.ELEMENT_ARRAY_BUFFER,
-            new Uint16Array(indices),
-            gl.STATIC_DRAW
-        );
-
-        return indexBuffer;
     }
 };

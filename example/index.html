@@ -12,6 +12,8 @@
                 margin: 0;
 
                 overflow: hidden;
+
+                background: #000;
             }
 
             body {
@@ -62,10 +64,11 @@
                     endBlockColor: [ 0, 0, 0, 255 ],
 
                     elevationGradient: true,
-
+                    
+                    cameraFov: 20,
                     cameraRotation: [ 3, .5, 0 ],
 
-                    cameraFov: 20
+                    grid: true
                 });
 
                 renderer.setPaths(paths, [
@@ -91,13 +94,13 @@
 
                 const renderer = new RouteRenderer(canvas, {
                     topColor: [ 187, 135, 252, 255 ],
-                    endBlockColor: [ 0, 0, 0, 255 ],
 
                     elevationGradient: true,
 
                     cameraRotation: [ 3, .5, 0 ],
+                    cameraFov: 20,
 
-                    cameraFov: 20
+                    grid: true
                 });
 
                 renderer.setPaths(paths, [
@@ -125,6 +128,8 @@
                     topColor: [ 187, 135, 252, 255 ],
                     wallColor: [ 23, 26, 35, 255 ],
 
+                    wallWidth: .25,
+
                     projectionZoomLevel: 4,
 
                     keepMinimumAltitude: true,
@@ -138,21 +143,21 @@
             }
 
             /*{
-                const canvas = document.getElementById("canvas4");
+                const canvas = document.getElementById("canvas3");
 
                 const renderer = new RouteRenderer(canvas, {
                     keepMinimumAltitude: true,
 
-                    cameraFov: 20,
+                    cameraFov: 4,
 
-                    cameraRotation: [ 0, .5, 0 ]
+                    cameraRotation: [ .5, 0, 0 ]
                 });
 
                 renderer.setPaths([
                     [
-                        { x: 0, y: 0, z: 1 },
-                        { x: 0, y: 1, z: 1 },
-                        { x: .5, y: 1.5, z: 2 },
+                        { x: 0, y: 0, z: 2 },
+                        { x: 0, y: 1, z: 2 },
+                        { x: .5, y: 1.5, z: 10 },
                     ]
                 ], [], false);
             }*/
@@ -172,6 +177,8 @@
                     topColor: [ 187, 135, 252, 255 ],
                     wallColor: [ 23, 26, 35, 255 ],
 
+                    wallWidth: .5,
+
                     projectionZoomLevel: 4,
 
                     keepMinimumAltitude: true,
@@ -182,7 +189,7 @@
                     cameraTranslation: [ 0, 0, -80 ]
                 });
 
-                renderer.setPaths(paths, []);
+                renderer.setPaths(paths);
             }
         </script>
     </body>

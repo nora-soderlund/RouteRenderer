@@ -1,10 +1,10 @@
-import { RendererOptions } from "../renderer";
+import { RendererOptions } from "../renderer.js";
 
 declare const mat4: any;
 
 export class RendererScene {
     static drawScene(gl: WebGLRenderingContext, programInfo: any, bufferers: any, options: RendererOptions, deltas: any) {
-        gl.clearColor(0.0, 0.0, 0.0, 1.0); // Clear to black, fully opaque
+        gl.clearColor(0.0, 0.0, 0.0, 0.0); // Clear to black, fully opaque
         gl.clearDepth(1.0); // Clear everything
         gl.enable(gl.DEPTH_TEST); // Enable depth testing
         gl.depthFunc(gl.LEQUAL); // Near things obscure far things
@@ -39,7 +39,7 @@ export class RendererScene {
         mat4.translate(
             modelViewMatrix, // destination matrix
             modelViewMatrix, // matrix to translate
-            options.cameraTranslation ?? [0.0, 0.0, -20.0]
+            options.cameraTranslation ?? [0.0, 0.0, -25.0]
         );
 
         mat4.rotate(
