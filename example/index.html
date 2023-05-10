@@ -31,10 +31,10 @@
     </head>
 
     <body>
-        <canvas id="canvas1" width="1920" height="1080"></canvas>
-        <canvas id="canvas2" width="1920" height="1080"></canvas>
-        <canvas id="canvas3" width="1920" height="1080"></canvas>
-        <canvas id="canvas4" width="1920" height="1080"></canvas>
+        <canvas id="canvas1"></canvas>
+        <canvas id="canvas2"></canvas>
+        <canvas id="canvas3"></canvas>
+        <canvas id="canvas4"></canvas>
 
         <script
             src="https://cdnjs.cloudflare.com/ajax/libs/gl-matrix/2.8.1/gl-matrix-min.js"
@@ -58,6 +58,9 @@
                 }));
 
                 const canvas = document.getElementById("canvas1");
+
+                canvas.width = screen.width / 2;
+                canvas.height = screen.height / 2;
 
                 const renderer = new RouteRenderer(canvas, {
                     topColor: [ 187, 135, 252, 255 ],
@@ -92,6 +95,9 @@
 
                 const canvas = document.getElementById("canvas2");
 
+                canvas.width = screen.width / 2;
+                canvas.height = screen.height / 2;
+
                 const renderer = new RouteRenderer(canvas, {
                     topColor: [ 187, 135, 252, 255 ],
 
@@ -124,6 +130,9 @@
 
                 const canvas = document.getElementById("canvas3");
 
+                canvas.width = screen.width / 2;
+                canvas.height = screen.height / 2;
+
                 const renderer = new RouteRenderer(canvas, {
                     topColor: [ 187, 135, 252, 255 ],
                     wallColor: [ 23, 26, 35, 255 ],
@@ -144,6 +153,9 @@
 
             /*{
                 const canvas = document.getElementById("canvas3");
+
+                canvas.width = screen.width / 2;
+                canvas.height = screen.height / 2;
 
                 const renderer = new RouteRenderer(canvas, {
                     keepMinimumAltitude: true,
@@ -172,6 +184,9 @@
                 }));
 
                 const canvas = document.getElementById("canvas4");
+
+                canvas.width = screen.width / 2;
+                canvas.height = screen.height / 2;
 
                 const renderer = new RouteRenderer(canvas, {
                     topColor: [ 187, 135, 252, 255 ],
