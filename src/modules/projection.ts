@@ -1,3 +1,5 @@
+import { RendererOptions } from "./renderer";
+
 export class Projection {
     static getTileSize(zoomLevel: number) {
         return zoomLevel * 256;
@@ -22,10 +24,14 @@ export class Projection {
         };
     };
 
-    static projectToPixelCoordinate(zoomLevel: number, latitude: number, longitude: number) {
-        const worldCoordinates = this.getMercatorWorldCoordinateProjection(zoomLevel, latitude, longitude);
-        const pixelCoordinates = this.getPixelCoordinates(zoomLevel, worldCoordinates.left, worldCoordinates.top);
+    static projectToPixelCoordinate(point: { latitude: number; longitude: number; altitude: number; }, options: RendererOptions) {
+        const worldCoordinates = this.getMercatorWorldCoordinateProjection(options.projectionZoomLevel ?? 2, point.latitude, point.longitude);
+        const pixelCoordinates = this.getPixelCoordinates(options.projectionZoomLevel ?? 2, worldCoordinates.left, worldCoordinates.top);
 
-        return pixelCoordinates;
+        return {
+            x: pixelCoordinates.left,
+            y: pixelCoordinates.top,
+            z: point.altitude
+        };
     };
 };

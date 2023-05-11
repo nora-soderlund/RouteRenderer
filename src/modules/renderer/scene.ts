@@ -3,15 +3,17 @@ import { RendererOptions } from "../renderer.js";
 declare const mat4: any;
 
 export class RendererScene {
-    static drawScene(gl: WebGLRenderingContext, programInfo: any, bufferers: any, options: RendererOptions, deltas: any) {
-        gl.clearColor(0.0, 0.0, 0.0, 0.0); // Clear to black, fully opaque
-        gl.clearDepth(1.0); // Clear everything
+    static drawScene(gl: WebGLRenderingContext, programInfo: any, bufferers: any, options: RendererOptions, deltas: any, matrix?: Float64Array) {
+        if(options.autoClear ?? true) {
+            gl.clearColor(0.0, 0.0, 0.0, 0.0); // Clear to black, fully opaque
+            gl.clearDepth(1.0); // Clear everything
+
+            // Clear the canvas before we start drawing on it.
+
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        }
         gl.enable(gl.DEPTH_TEST); // Enable depth testing
         gl.depthFunc(gl.LEQUAL); // Near things obscure far things
-
-        // Clear the canvas before we start drawing on it.
-
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         // Create a perspective matrix, a special matrix that is
         // used to simulate the distortion of perspective in a camera.
@@ -23,16 +25,41 @@ export class RendererScene {
         const fieldOfView = ((options.cameraFov ?? 45) * Math.PI) / 180; // in radians
         const aspect = (gl.canvas as HTMLCanvasElement).clientWidth / (gl.canvas as HTMLCanvasElement).clientHeight;
         const zNear = 0.1;
-        const zFar = 10000.0;
+        const zFar = 1000000.0;
         const projectionMatrix = mat4.create();
 
         // note: glmatrix.js always has the first argument
         // as the destination to receive the result.
-        mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
+        //mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
 
         // Set the drawing position to the "identity" point, which is
         // the center of the scene.
         const modelViewMatrix = mat4.create();
+
+        if(matrix) {
+            // Convert the provided matrix values into an array
+            var matrixValues = [
+                matrix[0], matrix[1], matrix[2], matrix[3],
+                matrix[4], matrix[5], matrix[6], matrix[7],
+                matrix[8], matrix[9], matrix[10], matrix[11],
+                matrix[12], matrix[13], matrix[14], matrix[15],
+            ];
+            
+            // Create a mat4 object from the matrix values
+            var transformationMatrix = mat4.fromValues.apply(null, matrixValues);
+            
+            // Multiply the camera's view matrix with the transformation matrix
+            mat4.multiply(modelViewMatrix, modelViewMatrix, transformationMatrix);
+            
+            // Now the camera's view matrix is transformed by the provided matrix
+        }
+
+        mat4.rotate(
+            modelViewMatrix,
+            modelViewMatrix,
+            0 * (180 / Math.PI),
+            [0, 0, 1]
+        );
 
         // Now move the drawing position a bit to where we want to
         // start drawing the square.

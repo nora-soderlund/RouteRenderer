@@ -48,6 +48,12 @@
             import sessions2 from "./activities_034e6944-b3bb-40b1-bd90-8a7fa08de0c5.json" assert { type: "json" };
             import sessions3 from "./activities_70300cf5-614d-4597-9b23-b57fa0426fa2.json" assert { type: "json" };
 
+            function render(renderer, context, now) {
+                renderer.render(context, now);
+
+                window.requestAnimationFrame((now) => render(renderer, context, now));
+            };
+
             {
                 const paths = sessions1.map((session) => session.locations.map((location, index) => {
                     return {
@@ -62,7 +68,11 @@
                 canvas.width = screen.width / 2;
                 canvas.height = screen.height / 2;
 
-                const renderer = new RouteRenderer(canvas, {
+                const context = canvas.getContext("webgl", {
+                    premultipliedAlpha: true
+                });
+
+                const renderer = new RouteRenderer({
                     topColor: [ 187, 135, 252, 255 ],
                     endBlockColor: [ 0, 0, 0, 255 ],
 
@@ -74,6 +84,10 @@
                     grid: true
                 });
 
+                renderer.registerMouseEvents(canvas);
+
+                renderer.setupContext(context);
+
                 renderer.setPaths(paths, [
                     {
                         type: "elevation",
@@ -82,6 +96,8 @@
                         repeat: true
                     }
                 ]);
+
+                render(renderer, context, performance.now());
             }
 
             {
@@ -98,7 +114,11 @@
                 canvas.width = screen.width / 2;
                 canvas.height = screen.height / 2;
 
-                const renderer = new RouteRenderer(canvas, {
+                const context = canvas.getContext("webgl", {
+                    premultipliedAlpha: true
+                });
+
+                const renderer = new RouteRenderer({
                     topColor: [ 187, 135, 252, 255 ],
 
                     elevationGradient: true,
@@ -109,6 +129,10 @@
                     grid: true
                 });
 
+                renderer.registerMouseEvents(canvas);
+
+                renderer.setupContext(context);
+
                 renderer.setPaths(paths, [
                     {
                         type: "distance",
@@ -117,6 +141,8 @@
                         repeat: true
                     }
                 ]);
+
+                render(renderer, context, performance.now());
             }
 
             {
@@ -133,7 +159,11 @@
                 canvas.width = screen.width / 2;
                 canvas.height = screen.height / 2;
 
-                const renderer = new RouteRenderer(canvas, {
+                const context = canvas.getContext("webgl", {
+                    premultipliedAlpha: true
+                });
+
+                const renderer = new RouteRenderer({
                     topColor: [ 187, 135, 252, 255 ],
                     wallColor: [ 23, 26, 35, 255 ],
 
@@ -148,7 +178,13 @@
                     cameraTranslation: [ 0, 0, -30 ]
                 });
 
+                renderer.registerMouseEvents(canvas);
+
+                renderer.setupContext(context);
+
                 renderer.setPaths(paths, []);
+
+                render(renderer, context, performance.now());
             }
 
             /*{
@@ -157,13 +193,21 @@
                 canvas.width = screen.width / 2;
                 canvas.height = screen.height / 2;
 
-                const renderer = new RouteRenderer(canvas, {
+                const context = canvas.getContext("webgl", {
+                    premultipliedAlpha: true
+                });
+
+                const renderer = new RouteRenderer({
                     keepMinimumAltitude: true,
 
                     cameraFov: 4,
 
                     cameraRotation: [ .5, 0, 0 ]
                 });
+
+                renderer.registerMouseEvents(canvas);
+
+                renderer.setupContext(context);
 
                 renderer.setPaths([
                     [
@@ -172,6 +216,8 @@
                         { x: .5, y: 1.5, z: 10 },
                     ]
                 ], [], false);
+
+                render(renderer, context, performance.now());
             }*/
 
             {
@@ -188,7 +234,11 @@
                 canvas.width = screen.width / 2;
                 canvas.height = screen.height / 2;
 
-                const renderer = new RouteRenderer(canvas, {
+                const context = canvas.getContext("webgl", {
+                    premultipliedAlpha: true
+                });
+
+                const renderer = new RouteRenderer({
                     topColor: [ 187, 135, 252, 255 ],
                     wallColor: [ 23, 26, 35, 255 ],
 
@@ -204,7 +254,13 @@
                     cameraTranslation: [ 0, 0, -80 ]
                 });
 
+                renderer.registerMouseEvents(canvas);
+
+                renderer.setupContext(context);
+
                 renderer.setPaths(paths);
+
+                render(renderer, context, performance.now());
             }
         </script>
     </body>
