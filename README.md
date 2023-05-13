@@ -26,13 +26,13 @@ Google Maps WebGL Overlay View integration is included.
   If you do not plan on using Google Maps, you do not need this.
   
 ## Installation
-- Download the latest release package
-- Import it in your module script, e.g.:
+- Download the latest release and extract the bundle file(s); or use an existing CDN:
   
   ```js
-  import { RouteRenderer } from "../routerenderer.js";
+  <script src="https://www.unpkg.com/routerenderer@0.9.2/dist/bundle.mjs"></script>
   ```
-- Initialize a `RouteRenderer` instance on a canvas element and set a path, e.g.:
+  
+- Initialize a `Renderer` instance on a canvas element and set a path, e.g.:
   
   ```js
   function render(renderer, context, now) {
@@ -50,7 +50,7 @@ Google Maps WebGL Overlay View integration is included.
       premultipliedAlpha: true
   });
 
-  const renderer = new RouteRenderer({
+  const renderer = new RouteRenderer.Renderer({
     keepMinimumAltitude: true,
 
     cameraFov: 4,
@@ -74,7 +74,7 @@ Google Maps WebGL Overlay View integration is included.
   ```
 
 # References
-## RouteRenderer
+## Renderer
 ### Constructor
 - `constructor(options: RendererOptions)`
 
@@ -107,9 +107,9 @@ Google Maps WebGL Overlay View integration is included.
 
   Renders the current scene on the passed context, `now` is expected to be a high res timestamp, e.g. from `requestAnimationFrame`, `matrix` can be passed to use in the scene rendering if needed for e.g. Google Maps WebGL Overlay View implementations, etc.
   
-## RouteWebGLOverlayView
+## WebGLOverlayView
 ### Constructor
-- `constructor(renderer: RouteRenderer, paths: any[][])`
+- `constructor(renderer: Renderer, paths: any[][])`
 
   Sets up a Google Maps WebGL Overlay View with a custom projection using the transformer in the draw function.
   
