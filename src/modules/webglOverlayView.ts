@@ -1,4 +1,4 @@
-import { RouteRenderer } from "src";
+import { RouteRenderer } from "src/index";
 
 declare const mat4: any;
 declare const vec4: any;

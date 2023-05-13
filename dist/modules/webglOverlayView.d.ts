@@ -1,4 +1,4 @@
-import { RouteRenderer } from "src";
+import { RouteRenderer } from "src/index";
 export default class RouteWebGLOverlayView {
     constructor(renderer: RouteRenderer, paths: any[][]);
 }
