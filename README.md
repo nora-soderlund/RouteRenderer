@@ -19,6 +19,12 @@ Google Maps WebGL Overlay View integration is included.
       defer></script>
   ```
   
+- Google Maps JS API is required to be loaded before constructing `RouteWebGLOverlayView` **only**.
+  
+  `RouteWebGLOverlayView` is only an adaption of this package for Google Maps, this package works as a core standalone regardless.
+  
+  If you do not plan on using Google Maps, you do not need this.
+  
 ## Installation
 - Download the latest release package
 - Import it in your module script, e.g.:
