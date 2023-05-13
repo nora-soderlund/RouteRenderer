@@ -33,6 +33,10 @@ export type RendererOptions = {
     gridPadding?: number;
 
     autoClear?: boolean;
+
+    center?: boolean;
+    keepPerspectiveProjection?: boolean;
+    keepMinimumPositions?: boolean;
 };
 
 export default class Renderer {
@@ -53,6 +57,10 @@ export default class Renderer {
         this.options = options;
 
         //window.requestAnimationFrame(this.render.bind(this));
+    };
+
+    public setOptions(options: RendererOptions) {
+        this.options = { ...this.options, ...options };
     };
 
     public setupContext(context: WebGLRenderingContext) {
@@ -80,21 +88,20 @@ export default class Renderer {
         for(let coordinate of path) {
             if(!project) {
                 coordinate.projection = {
-                    left: coordinate.x,
-                    top: coordinate.y
+                    x: coordinate.x,
+                    y: coordinate.y,
+                    z: coordinate.z
                 };
-
-                coordinate.altitude = coordinate.z;
             }
             else {
                 coordinate.projection = (projectionFunction ?? Projection.projectToPixelCoordinate).call(projectionFunction ?? Projection, coordinate, this.options);
             }
 
-            if(window.isNaN(minimumAltitude) || coordinate.altitude < minimumAltitude)
-                minimumAltitude = coordinate.altitude;
+            if(window.isNaN(minimumAltitude) || coordinate.projection.z < minimumAltitude)
+                minimumAltitude = coordinate.projection.z;
                 
-            if(window.isNaN(maximumAltitude) || coordinate.altitude > maximumAltitude)
-                maximumAltitude = coordinate.altitude;
+            if(window.isNaN(maximumAltitude) || coordinate.projection.z > maximumAltitude)
+                maximumAltitude = coordinate.projection.z;
 
             if(window.isNaN(startLeft))
                 startLeft = coordinate.projection.x;
@@ -130,11 +137,22 @@ export default class Renderer {
             let fullDistance = 0;
 
             path.forEach((coordinate, index) => {
-                const colorMultiplier = (coordinate.altitude - minimumAltitude) / (maximumAltitude - minimumAltitude);
+                const colorMultiplier = (coordinate.projection.z - minimumAltitude) / (maximumAltitude - minimumAltitude);
 
-                const x = (coordinate.projection.x - startLeft);
-                const y = (startTop - coordinate.projection.y);
-                const z = (coordinate.altitude - minimumAltitude) * ((this.options.projectionZoomLevel ?? 2));
+                let x = coordinate.projection.x;
+                let y = coordinate.projection.y;
+
+                if(!(this.options.keepMinimumPositions ?? false)) {
+                    x = ((startLeft > coordinate.projection.x)?(startLeft - coordinate.projection.x):(coordinate.projection.x - startLeft));
+                    y = ((startTop < coordinate.projection.y)?(startTop - coordinate.projection.y):(coordinate.projection.y - startTop));
+                }
+
+                if(this.options.center ?? true) {
+                    x -= centerLeft;
+                    y += centerTop;
+                }
+
+                const z = (coordinate.projection.z - minimumAltitude);
 
                 const distanceX = (index === 0)?(0):(Math.abs(x - points[index - 1].x));
                 const distanceY = (index === 0)?(0):(Math.abs(y - points[index - 1].y));

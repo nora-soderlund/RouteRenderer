@@ -31,7 +31,7 @@ export class Projection {
         return {
             x: pixelCoordinates.left,
             y: pixelCoordinates.top,
-            z: point.altitude
+            z: point.altitude * ((options.projectionZoomLevel ?? 2) / 100)
         };
     };
 };

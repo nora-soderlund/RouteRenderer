@@ -1,6 +1,5 @@
 
-import { RouteRenderer } from "../dist/index.js";
-
+import { RouteRenderer, RouteWebGLOverlayView } from "../dist/index.js";
 
 const instances = [
     (await (await fetch("./activities_009569ed-3cb9-431b-81e1-42ba4813161e.json")).json())
@@ -57,86 +56,24 @@ for(let sessions of instances) {
             lng: end.longitude
         }
     });
-    
-    const webglOverlayView = new google.maps.WebGLOverlayView();
 
     const renderer = new RouteRenderer({
         topColor: [ 187, 135, 252, 255 ],
         wallColor: [ 23, 26, 35, 255 ],
 
-        elevationGradient: false,
+        elevationGradient: true,
         
         cameraFov: 20,
         cameraRotation: [ 0, 90 * (Math.PI / 180), 0 ],
         cameraTranslation: [ 0, 0, 0 ],
 
-        projectionZoomLevel: 12,
-
         wallWidth: 300,
 
         grid: false,
-        gridPadding: 10000,
-
-        autoClear: false
+        gridPadding: 10000
     });
     
-    webglOverlayView.onAdd = () => {
-        // Do setup that does not require access to rendering context.
-    };
-
-    webglOverlayView.onContextRestored = ({gl}) => {
-        // Do setup that requires access to rendering context before onDraw call.
-        
-        renderer.setupContext(gl);
-    };
-
-    webglOverlayView.onStateUpdate = ({gl}) => {
-        // Do GL state setup or updates outside of the render loop.
-    };
-
-    webglOverlayView.onDraw = ({gl, transformer}) => {
-        if(!renderer.paths.length) {
-            renderer.setPaths(paths, null, true, (point, options) => {
-                const matrix = transformer.fromLatLngAltitude({
-                    lat: point.latitude,
-                    lng: point.longitude,
-                    altitude: 0,
-                });
-
-                const inverseMatrix = mat4.create();
-                const homogeneousCoord = vec4.fromValues(0, 0, 0, 1);
-                const result = vec4.create();
-                
-                mat4.invert(inverseMatrix, matrix);
-                vec4.transformMat4(result, homogeneousCoord, inverseMatrix);
-                
-                return {
-                    x: result[1] / 3 * 2,
-                    y: result[0] / 3 * 2,
-                    z: point.altitude * 100
-                }
-            });
-        }
-
-        // Render objects.
-        const matrix = transformer.fromLatLngAltitude({
-            lat: paths[0][0].latitude,
-            lng: paths[0][0].longitude,
-            altitude: 0,
-        });
-
-        webglOverlayView.requestRedraw();
-
-        renderer.render(gl, performance.now(), matrix);
-    };
-
-    webglOverlayView.onContextLost = () => {
-        // Clean up pre-existing GL state.
-    };
-
-    webglOverlayView.onRemove = () => {
-        // Remove all intermediate objects.
-    };
+    const webglOverlayView = new RouteWebGLOverlayView(renderer, paths);
 
     webglOverlayView.setMap(map);
 }

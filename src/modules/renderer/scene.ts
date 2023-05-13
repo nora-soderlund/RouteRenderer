@@ -25,8 +25,11 @@ export class RendererScene {
         const fieldOfView = ((options.cameraFov ?? 45) * Math.PI) / 180; // in radians
         const aspect = (gl.canvas as HTMLCanvasElement).clientWidth / (gl.canvas as HTMLCanvasElement).clientHeight;
         const zNear = 0.1;
-        const zFar = 1000000.0;
+        const zFar = 1000.0;
         const projectionMatrix = mat4.create();
+
+        if(options.keepPerspectiveProjection ?? true)
+            mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
 
         // note: glmatrix.js always has the first argument
         // as the destination to receive the result.

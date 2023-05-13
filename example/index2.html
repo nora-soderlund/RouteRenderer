@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8"/>
+
+        <title>Route Renderer Example</title>
+
+        <style>
+            html, body {
+                height: 100%;
+                
+                margin: 0;
+
+                overflow: hidden;
+
+                background: #000;
+            }
+
+            canvas {
+                width: 100%;
+                height: 100%;
+            }
+        </style>
+    </head>
+
+    <body>
+        <canvas id="canvas"></canvas>
+
+        <script
+            src="https://cdnjs.cloudflare.com/ajax/libs/gl-matrix/2.8.1/gl-matrix-min.js"
+            integrity="sha512-zhHQR0/H5SEBL3Wn6yYSaTTZej12z0hVZKOv3TwCUXT1z5qeqGcXJLLrbERYRScEDDpYIJhPC1fk31gqR783iQ=="
+            crossorigin="anonymous"
+            defer></script>
+
+        <script type="module">
+            import { RouteRenderer } from "../dist/index.js";
+            import sessions from "./activities_009569ed-3cb9-431b-81e1-42ba4813161e.json" assert { type: "json" };
+
+            function render(renderer, context, now) {
+                renderer.render(context, now);
+
+                window.requestAnimationFrame((now) => render(renderer, context, now));
+            };
+
+            const paths = sessions.map((session) => session.locations.map((location, index) => {
+                return {
+                    latitude: location.coords.latitude,
+                    longitude: location.coords.longitude,
+                    altitude: location.coords.altitude + (index * .5)
+                };
+            }));
+
+            const canvas = document.getElementById("canvas");
+
+            canvas.width = screen.width;
+            canvas.height = screen.height;
+
+            const context = canvas.getContext("webgl", {
+                premultipliedAlpha: true
+            });
+
+            const renderer = new RouteRenderer({
+                topColor: [ 187, 135, 252, 255 ],
+
+                elevationGradient: true,
+                
+                cameraFov: 20,
+                cameraRotation: [ 3, .5, 0 ],
+
+                grid: true,
+                gridPadding: 100000,
+                gridColor: [ 35, 44, 60, 255 ]
+            });
+
+            renderer.registerMouseEvents(canvas);
+
+            renderer.setupContext(context);
+
+            renderer.setPaths(paths);
+
+            render(renderer, context, performance.now());
+        </script>
+    </body>
+</html>
