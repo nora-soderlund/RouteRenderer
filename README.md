@@ -3,6 +3,10 @@ A pure JavaScript package to render paths, directions, routes, or lines in 3d us
 
 https://user-images.githubusercontent.com/78360666/236035333-a6c91394-8e8b-4482-877f-3ea463873bb6.mp4
 
+Google Maps WebGL Overlay View integration is included.
+
+![Google Maps example](https://github.com/nora-soderlund/RouteRenderer/assets/78360666/8fae58d4-e47e-421b-93ca-a02653d79f66)
+
 # Get started
 ## Prerequisites
 - gl-matrix must be loaded before this package, e.g.:
