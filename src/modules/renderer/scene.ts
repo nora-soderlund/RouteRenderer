@@ -1,4 +1,4 @@
-import { RendererOptions } from "../renderer.js";
+import { RendererOptions } from "../renderer";
 
 declare const mat4: any;
 

@@ -1,6 +1,6 @@
-import { RendererOptions } from "../../renderer.js";
-import { AnimationFrame } from "../animation.js";
-import { RendererBuffers } from "../buffers.js";
+import { RendererOptions } from "../../renderer";
+import { AnimationFrame } from "../animation";
+import { RendererBuffers } from "../buffers";
 
 export class RendererGridModel {
     static createBuffers(gl: WebGLRenderingContext, options: RendererOptions, animationFrame: AnimationFrame, paths: any[]) {

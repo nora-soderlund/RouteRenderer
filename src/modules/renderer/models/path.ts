@@ -1,6 +1,6 @@
-import { RendererOptions } from "../../renderer.js";
-import { AnimationFrame } from "../animation.js";
-import { RendererBuffers } from "../buffers.js";
+import { RendererOptions } from "../../renderer";
+import { AnimationFrame } from "../animation";
+import { RendererBuffers } from "../buffers";
 
 declare const vec3: any;
 

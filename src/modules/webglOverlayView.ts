@@ -1,4 +1,4 @@
-import { RouteRenderer } from "src/index";
+import { RouteRenderer } from "../index";
 
 declare const mat4: any;
 declare const vec4: any;
@@ -23,7 +23,7 @@ export default class RouteWebGLOverlayView {
     
         overlay.onDraw = ({ gl, transformer }: { gl: WebGLRenderingContext, transformer: any }) => {
             if(!renderer.paths.length) {
-                renderer.setPaths(paths, null, true, (point, options) => {
+                renderer.setPaths(paths, null, true, (point: { latitude: number; longitude: number; altitude: number; }, options) => {
                     const matrix = transformer.fromLatLngAltitude({
                         lat: point.latitude,
                         lng: point.longitude,

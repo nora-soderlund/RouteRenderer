@@ -1,9 +1,9 @@
-import { Projection } from "./projection.js";
-import { Animation, AnimationFrame } from "./renderer/animation.js";
-import { RendererGridModel } from "./renderer/models/grid.js";
-import { RendererPathModel } from "./renderer/models/path.js";
-import { RendererScene } from "./renderer/scene.js";
-import { RendererWebGL } from "./renderer/webgl.js";
+import { Projection } from "./projection";
+import { Animation, AnimationFrame } from "./renderer/animation";
+import { RendererGridModel } from "./renderer/models/grid";
+import { RendererPathModel } from "./renderer/models/path";
+import { RendererScene } from "./renderer/scene";
+import { RendererWebGL } from "./renderer/webgl";
 
 export type RendererOptions = {
     topColor?: number[];
