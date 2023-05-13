@@ -1,3 +1,4 @@
 import Renderer from "./modules/renderer.js";
-export { Renderer as RouteRenderer };
+import RouteWebGLOverlayView from "./modules/webglOverlayView.js";
+export { Renderer as RouteRenderer, RouteWebGLOverlayView };
 //# sourceMappingURL=index.d.ts.map

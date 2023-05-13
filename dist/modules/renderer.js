@@ -4,31 +4,29 @@ import { RendererPathModel } from "./renderer/models/path.js";
 import { RendererScene } from "./renderer/scene.js";
 import { RendererWebGL } from "./renderer/webgl.js";
 export default class Renderer {
-    canvas;
-    context;
     options;
     programInfo;
     paths = [];
     bufferers = [];
     animations = null;
+    previousAnimationsLength = 0;
     deltaX = 0;
     deltaY = 0;
     previous = 0;
-    constructor(canvas, options) {
-        const context = canvas.getContext("webgl", {
-            premultipliedAlpha: options.premultipliedAlpha ?? true
-        });
-        if (!context)
-            throw new Error("WebGL is not supported.");
-        this.canvas = canvas;
-        this.context = context;
+    constructor(options) {
         this.options = options;
-        this.programInfo = RendererWebGL.initializeProgram(this.context);
-        this.registerMouseEvents();
-        window.requestAnimationFrame(this.render.bind(this));
+        //window.requestAnimationFrame(this.render.bind(this));
     }
     ;
-    setPaths(paths, animations = null, project = true) {
+    setOptions(options) {
+        this.options = { ...this.options, ...options };
+    }
+    ;
+    setupContext(context) {
+        this.programInfo = RendererWebGL.initializeProgram(context);
+    }
+    ;
+    setPaths(paths, animations = null, project = true, projectionFunction) {
         let startLeft = NaN;
         let startTop = NaN;
         let minimumLeft = NaN;
@@ -41,29 +39,30 @@ export default class Renderer {
             for (let coordinate of path) {
                 if (!project) {
                     coordinate.projection = {
-                        left: coordinate.x,
-                        top: coordinate.y
+                        x: coordinate.x,
+                        y: coordinate.y,
+                        z: coordinate.z
                     };
-                    coordinate.altitude = coordinate.z;
                 }
-                else
-                    coordinate.projection = Projection.projectToPixelCoordinate(this.options.projectionZoomLevel ?? 2, coordinate.latitude, coordinate.longitude);
-                if (window.isNaN(minimumAltitude) || coordinate.altitude < minimumAltitude)
-                    minimumAltitude = coordinate.altitude;
-                if (window.isNaN(maximumAltitude) || coordinate.altitude > maximumAltitude)
-                    maximumAltitude = coordinate.altitude;
+                else {
+                    coordinate.projection = (projectionFunction ?? Projection.projectToPixelCoordinate).call(projectionFunction ?? Projection, coordinate, this.options);
+                }
+                if (window.isNaN(minimumAltitude) || coordinate.projection.z < minimumAltitude)
+                    minimumAltitude = coordinate.projection.z;
+                if (window.isNaN(maximumAltitude) || coordinate.projection.z > maximumAltitude)
+                    maximumAltitude = coordinate.projection.z;
                 if (window.isNaN(startLeft))
-                    startLeft = coordinate.projection.left;
+                    startLeft = coordinate.projection.x;
                 if (window.isNaN(startTop))
-                    startTop = coordinate.projection.top;
-                if (window.isNaN(minimumLeft) || coordinate.projection.left < minimumLeft)
-                    minimumLeft = coordinate.projection.left;
-                if (window.isNaN(maximumLeft) || coordinate.projection.left > maximumLeft)
-                    maximumLeft = coordinate.projection.left;
-                if (window.isNaN(minimumTop) || coordinate.projection.top < minimumTop)
-                    minimumTop = coordinate.projection.top;
-                if (window.isNaN(maximumTop) || coordinate.projection.top > maximumTop)
-                    maximumTop = coordinate.projection.top;
+                    startTop = coordinate.projection.y;
+                if (window.isNaN(minimumLeft) || coordinate.projection.x < minimumLeft)
+                    minimumLeft = coordinate.projection.x;
+                if (window.isNaN(maximumLeft) || coordinate.projection.x > maximumLeft)
+                    maximumLeft = coordinate.projection.x;
+                if (window.isNaN(minimumTop) || coordinate.projection.y < minimumTop)
+                    minimumTop = coordinate.projection.y;
+                if (window.isNaN(maximumTop) || coordinate.projection.y > maximumTop)
+                    maximumTop = coordinate.projection.y;
             }
         const centerLeft = (maximumLeft - minimumLeft) / 2;
         const centerTop = (maximumTop - minimumTop) / 2;
@@ -75,10 +74,18 @@ export default class Renderer {
             const points = [];
             let fullDistance = 0;
             path.forEach((coordinate, index) => {
-                const colorMultiplier = (coordinate.altitude - minimumAltitude) / (maximumAltitude - minimumAltitude);
-                const x = ((startLeft > coordinate.projection.left) ? (startLeft - coordinate.projection.left) : (coordinate.projection.left - startLeft)) - (centerLeft);
-                const y = ((startTop < coordinate.projection.top) ? (startTop - coordinate.projection.top) : (coordinate.projection.top - startTop)) + (centerTop);
-                const z = (coordinate.altitude - minimumAltitude) * ((this.options.projectionZoomLevel ?? 2) / 100);
+                const colorMultiplier = (coordinate.projection.z - minimumAltitude) / (maximumAltitude - minimumAltitude);
+                let x = coordinate.projection.x;
+                let y = coordinate.projection.y;
+                if (!(this.options.keepMinimumPositions ?? false)) {
+                    x = ((startLeft > coordinate.projection.x) ? (startLeft - coordinate.projection.x) : (coordinate.projection.x - startLeft));
+                    y = ((startTop < coordinate.projection.y) ? (startTop - coordinate.projection.y) : (coordinate.projection.y - startTop));
+                }
+                if (this.options.center ?? true) {
+                    x -= centerLeft;
+                    y += centerTop;
+                }
+                const z = (coordinate.projection.z - minimumAltitude);
                 const distanceX = (index === 0) ? (0) : (Math.abs(x - points[index - 1].x));
                 const distanceY = (index === 0) ? (0) : (Math.abs(y - points[index - 1].y));
                 const distance = Math.sqrt(Math.pow(distanceX, 2) + Math.pow(distanceY, 2));
@@ -110,7 +117,7 @@ export default class Renderer {
             };
         });
         this.animations = animations;
-        this.bufferers = this.bufferers = this.createBuffers(performance.now());
+        this.bufferers = [];
     }
     ;
     getAnimationFrame(now = 0) {
@@ -157,11 +164,11 @@ export default class Renderer {
         return frame;
     }
     ;
-    registerMouseEvents() {
+    registerMouseEvents(canvas) {
         let mouseDown = false;
         let lastMouseX = null;
         let lastMouseY = null;
-        this.canvas.addEventListener("mousedown", (event) => {
+        canvas.addEventListener("mousedown", (event) => {
             mouseDown = true;
             lastMouseX = event.pageX;
             lastMouseY = event.pageY;
@@ -182,23 +189,26 @@ export default class Renderer {
         });
     }
     ;
-    render(now, previousAnimations) {
-        const animations = this.animations?.length;
-        if (this.bufferers.length !== this.paths.length || this.animations?.length || this.animations?.length !== previousAnimations)
-            this.bufferers = this.createBuffers(now);
-        RendererScene.drawScene(this.context, this.programInfo, this.bufferers, this.options, {
+    render(context, now, matrix) {
+        if (!this.programInfo)
+            throw new Error("Program info is not set up yet, you must call setupContext before rendering!");
+        const animations = this.animations?.length ?? 0;
+        if (this.bufferers.length !== this.paths.length || this.animations?.length || this.animations?.length !== this.previousAnimationsLength)
+            this.bufferers = this.createBuffers(context, now);
+        RendererScene.drawScene(context, this.programInfo, this.bufferers, this.options, {
             x: this.deltaX,
             y: this.deltaY
-        });
-        window.requestAnimationFrame((now) => this.render(now, animations));
+        }, matrix);
+        this.previousAnimationsLength = animations;
+        //window.requestAnimationFrame((now) => this.render(now, animations));
     }
     ;
-    createBuffers(now) {
+    createBuffers(context, now) {
         const buffers = [];
         const animationFrame = this.getAnimationFrame(now);
-        buffers.push(...this.paths.map((path) => RendererPathModel.createBuffers(this.context, path, this.options, animationFrame)));
+        buffers.push(...this.paths.map((path) => RendererPathModel.createBuffers(context, path, this.options, animationFrame)));
         if (this.options.grid)
-            buffers.push(RendererGridModel.createBuffers(this.context, this.options, animationFrame, this.paths));
+            buffers.push(RendererGridModel.createBuffers(context, this.options, animationFrame, this.paths));
         return buffers;
     }
     ;

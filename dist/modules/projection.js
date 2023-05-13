@@ -20,10 +20,14 @@ export class Projection {
         };
     }
     ;
-    static projectToPixelCoordinate(zoomLevel, latitude, longitude) {
-        const worldCoordinates = this.getMercatorWorldCoordinateProjection(zoomLevel, latitude, longitude);
-        const pixelCoordinates = this.getPixelCoordinates(zoomLevel, worldCoordinates.left, worldCoordinates.top);
-        return pixelCoordinates;
+    static projectToPixelCoordinate(point, options) {
+        const worldCoordinates = this.getMercatorWorldCoordinateProjection(options.projectionZoomLevel ?? 2, point.latitude, point.longitude);
+        const pixelCoordinates = this.getPixelCoordinates(options.projectionZoomLevel ?? 2, worldCoordinates.left, worldCoordinates.top);
+        return {
+            x: pixelCoordinates.left,
+            y: pixelCoordinates.top,
+            z: point.altitude * ((options.projectionZoomLevel ?? 2) / 100)
+        };
     }
     ;
 }

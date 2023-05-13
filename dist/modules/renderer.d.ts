@@ -15,27 +15,39 @@ export type RendererOptions = {
     cameraFov?: number;
     cameraTranslation?: number[];
     cameraRotation?: number[];
-    premultipliedAlpha?: boolean;
     grid?: boolean;
     gridColor?: number[];
     gridPadding?: number;
+    autoClear?: boolean;
+    center?: boolean;
+    keepPerspectiveProjection?: boolean;
+    keepMinimumPositions?: boolean;
 };
 export default class Renderer {
-    private canvas;
-    private context;
     private options;
     private programInfo;
-    private paths;
+    paths: any[];
     private bufferers;
     private animations;
+    private previousAnimationsLength;
     private deltaX;
     private deltaY;
     private previous;
-    constructor(canvas: HTMLCanvasElement, options: RendererOptions);
-    setPaths(paths: any[][], animations?: Animation[] | null, project?: boolean): void;
+    constructor(options: RendererOptions);
+    setOptions(options: RendererOptions): void;
+    setupContext(context: WebGLRenderingContext): void;
+    setPaths(paths: any[][], animations?: Animation[] | null, project?: boolean, projectionFunction?: (point: {
+        latitude: number;
+        longitude: number;
+        altitude: number;
+    }, options: RendererOptions) => {
+        x: number;
+        y: number;
+        z: number;
+    }): void;
     private getAnimationFrame;
-    private registerMouseEvents;
-    private render;
+    registerMouseEvents(canvas: HTMLCanvasElement): void;
+    render(context: WebGLRenderingContext, now: number, matrix?: Float64Array): void;
     private createBuffers;
 }
 //# sourceMappingURL=renderer.d.ts.map
