@@ -25,15 +25,32 @@ https://user-images.githubusercontent.com/78360666/236035333-a6c91394-8e8b-4482-
 - Initialize a `RouteRenderer` instance on a canvas element and set a path, e.g.:
   
   ```js
+  function render(renderer, context, now) {
+      renderer.render(context, now);
+
+      window.requestAnimationFrame((now) => render(renderer, context, now));
+  };
+            
   const canvas = document.getElementById("canvas");
 
-  const renderer = new RouteRenderer(canvas, {
+  canvas.width = screen.width;
+  canvas.height = screen.height;
+
+  const context = canvas.getContext("webgl", {
+      premultipliedAlpha: true
+  });
+
+  const renderer = new RouteRenderer({
     keepMinimumAltitude: true,
 
     cameraFov: 4,
 
     cameraRotation: [ .5, 0, 0 ]
   });
+
+  renderer.registerMouseEvents(canvas);
+
+  renderer.setupContext(context);
 
   renderer.setPaths([
     [
@@ -42,21 +59,54 @@ https://user-images.githubusercontent.com/78360666/236035333-a6c91394-8e8b-4482-
       { x: .5, y: 1.5, z: 1 }
     ]
   ], null, false);
+
+  render(renderer, context, performance.now());
   ```
 
 # References
 ## RouteRenderer
 ### Constructor
-- `constructor(canvas: HTMLCanvasElement, options: RendererOptions)`
+- `constructor(options: RendererOptions)`
 
 ### Methods
-- `setPaths(paths: any[][], animations: Animation[] | null = null, project: boolean = true)`
+- `setOptions(options: RendererOptions)`
+
+  Only adds or replaces current options, does not rewrite the entire options object!
+  
+- `setupContext(context: WebGLRenderingContext)`
+
+  Initializes required program information, a WebGL rendering context is required.
+  
+  Must be called before attempting to render.
+
+- `setPaths(paths: any[][], animations: Animation[] | null = null, project: boolean = true, projectionFunction?: (point: { latitude: number; longitude: number; altitude: number; }, options: RendererOptions) => { x: number; y: number; z: number; }`
 
   Replaces the current paths with the input paths, note that this is a two dimensional array, each first dimensional item declares a new path, e.g. a leg of a direction step, second dimensional item declares an array of coordinates.
 
-  X and Y are expected to be latitude and longitudes, however, if `project` is passed as false, then X and Y are expected to be raw units. The projection uses the [World Geodetic System WGS84](https://en.wikipedia.org/wiki/World_Geodetic_System) standard, [same as Google Maps](https://developers.google.com/maps/documentation/javascript/coordinates).
-
+  X and Y are expected to be latitude and longitudes, however, if `project` is passed as false, then X and Y are expected to be raw units.
   Z is expected to be elevation irregardless of projection. 
+  
+  The default projection uses the [World Geodetic System WGS84](https://en.wikipedia.org/wiki/World_Geodetic_System) standard, [same as Google Maps](https://developers.google.com/maps/documentation/javascript/coordinates).
+  To overwrite this projection function with your own, pass a function as the `projectionFunction` parameter.
+  
+- `registerMouseEvents(canvas: HTMLCanvasElement)`
+
+  Sets up mouse interaction with the canvas element for X and Y axis rotations.
+  
+- `render(context: WebGLRenderingContext, now: number, matrix?: Float64Array)`
+
+  Renders the current scene on the passed context, `now` is expected to be a high res timestamp, e.g. from `requestAnimationFrame`, `matrix` can be passed to use in the scene rendering if needed for e.g. Google Maps WebGL Overlay View implementations, etc.
+  
+## RouteWebGLOverlayView
+### Constructor
+- `constructor(renderer: RouteRenderer, paths: any[][])`
+
+  Sets up a Google Maps WebGL Overlay View with a custom projection using the transformer in the draw function.
+  
+  Returns an WebGLOverlayView instance.
+  
+  **This instance overwrites `autoClear`, `center`, `keepPerspectiveProjection` in the options.**
+
 
 ## RendererOptions
 - `topColor?: number[];`
@@ -86,13 +136,25 @@ https://user-images.githubusercontent.com/78360666/236035333-a6c91394-8e8b-4482-
 
 - `keepMinimumAltitude?: boolean;`
 
-  By default, the path is anchored by the lowest altitude to depth 0. 
+  The path is anchored by the lowest altitude to depth 0, to disable this, set this to true.
+
+- `keepMinimumPositions?: boolean;`
+
+  The path is anchored by top left start position by default to help with centering.
+
+- `keepPerspectiveProjection?: boolean;`
+
+  Initializes the default projection matrix with a field of view, aspect ratio, near- and far clip units.
+  
+  Disable this to use with other contexts, such as the Google Maps WebGL Overlay View.
 
 - `projectionZoomLevel?: number;`
 
   Defines the zoom level for the Mercator world coordinate projection, default is 4.
 
   Increase this to get a more detailed (but larger) model.
+  
+  This only applies when a paths is set without a custom projection function, but it is also passed as an option in the options parameter and can be reused.
 
 - `cameraFov?: number;`
 
