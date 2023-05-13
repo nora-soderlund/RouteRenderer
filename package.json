@@ -1,8 +1,9 @@
 {
   "name": "routerenderer",
-  "version": "0.9.1",
+  "version": "0.9.2",
   "description": "A pure JavaScript package to render paths, directions, routes, or lines in 3d using nothing but WebGL.",
   "main": "dist/index.js",
+  "type": "module",
   "scripts": {
     "build": "npx webpack --mode production",
     "dev": "npx tsc --watch"

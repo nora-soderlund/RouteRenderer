@@ -1,12 +1,12 @@
-import { RouteRenderer } from "../index";
+import { Renderer } from "../index";
 
 declare const mat4: any;
 declare const vec4: any;
 
 declare const google: any;
 
-export default class RouteWebGLOverlayView {
-    constructor(renderer: RouteRenderer, paths: any[][]) {
+export default class WebGLOverlayView {
+    constructor(renderer: Renderer, paths: any[][]) {
         const overlay = new google.maps.WebGLOverlayView();
 
         overlay.onAdd = overlay.onStateUpdate = overlay.onContextLost = overlay.onRemove = () => {};
