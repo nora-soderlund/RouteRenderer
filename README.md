@@ -169,11 +169,6 @@ Google Maps WebGL Overlay View integration is included.
 
   Defines the camera translation and rotation in the format of XYZ, e.g.: `[ 0, 0, 0 ]`.
 
-- `premultipliedAlpha?: boolean;`
-
-  A boolean value that indicates that the page compositor will assume the drawing buffer contains colors with pre-multiplied alpha. See [MDN](https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/getContext).
-  
-
 - `grid?: boolean;`
 - `gridColor?: number[];`
 - `gridPadding?: number;`
