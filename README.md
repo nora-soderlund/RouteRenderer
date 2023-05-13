@@ -29,7 +29,7 @@ Google Maps WebGL Overlay View integration is included.
 - Download the latest release and extract the bundle file(s); or use an existing CDN:
   
   ```js
-  <script src="https://www.unpkg.com/routerenderer@0.9.2/dist/bundle.mjs"></script>
+  <script src="https://www.unpkg.com/routerenderer@latest/dist/bundle.mjs"></script>
   ```
   
 - Initialize a `Renderer` instance on a canvas element and set a path, e.g.:
