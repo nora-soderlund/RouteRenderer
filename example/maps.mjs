@@ -1,6 +1,4 @@
 
-import { RouteRenderer, RouteWebGLOverlayView } from "../dist/index.js";
-
 const instances = [
     (await (await fetch("./activities_009569ed-3cb9-431b-81e1-42ba4813161e.json")).json())
 ];
@@ -57,7 +55,7 @@ for(let sessions of instances) {
         }
     });
 
-    const renderer = new RouteRenderer({
+    const renderer = new RouteRenderer.Renderer({
         topColor: [ 187, 135, 252, 255 ],
         wallColor: [ 23, 26, 35, 255 ],
 
@@ -73,7 +71,7 @@ for(let sessions of instances) {
         gridPadding: 10000
     });
     
-    const webglOverlayView = new RouteWebGLOverlayView(renderer, paths);
+    const webglOverlayView = new RouteRenderer.WebGLOverlayView(renderer, paths);
 
     webglOverlayView.setMap(map);
 }
