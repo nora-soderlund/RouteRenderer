@@ -41,6 +41,7 @@ export default class RouteWebGLOverlayView {
         };
         return overlay;
     }
+    ;
 }
 ;
 //# sourceMappingURL=webglOverlayView.js.map

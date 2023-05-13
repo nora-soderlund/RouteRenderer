@@ -10,7 +10,11 @@ export type RendererOptions = {
     wallWidth?: number;
     elevationGradient?: boolean;
     elevationGradientColors?: number[][];
+    center?: boolean;
+    autoClear?: boolean;
     keepMinimumAltitude?: boolean;
+    keepPerspectiveProjection?: boolean;
+    keepMinimumPositions?: boolean;
     projectionZoomLevel?: number;
     cameraFov?: number;
     cameraTranslation?: number[];
@@ -18,10 +22,6 @@ export type RendererOptions = {
     grid?: boolean;
     gridColor?: number[];
     gridPadding?: number;
-    autoClear?: boolean;
-    center?: boolean;
-    keepPerspectiveProjection?: boolean;
-    keepMinimumPositions?: boolean;
 };
 export default class Renderer {
     private options;

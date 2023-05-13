@@ -58,5 +58,5 @@ export default class RouteWebGLOverlayView {
         };
 
         return overlay;
-    }
+    };
 };
