@@ -142,9 +142,13 @@ export default class Renderer {
                 let x = coordinate.projection.x;
                 let y = coordinate.projection.y;
 
-                if(!(this.options.keepMinimumPositions ?? false)) {
+                if(!(this.options.keepMinimumPositions ?? false) && this.options.center) {
                     x = ((startLeft > coordinate.projection.x)?(startLeft - coordinate.projection.x):(coordinate.projection.x - startLeft));
                     y = ((startTop < coordinate.projection.y)?(startTop - coordinate.projection.y):(coordinate.projection.y - startTop));
+                }
+                else if(!(this.options.keepMinimumPositions ?? false)) {
+                    x = coordinate.projection.x - startLeft;
+                    y = startTop - coordinate.projection.y;
                 }
 
                 if(this.options.center ?? true) {
